@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
+  HageOyajiSvg,
+  ChapterIconSvg,
+  StagePreviewSvg,
   drawStageBackground,
   drawHouseTarget,
   drawObstacleVector,
@@ -12,46 +15,71 @@ import {
 const CHAPTERS = [
   {
     id: 1,
-    name: '第1章：銭湯の洗い場',
-    bg: '#172554',
-    floor: '#1e40af',
-    tile: '#3b82f6',
+    shortName: '1.銭湯',
+    name: '第1章：銭湯の洗い場（達成で即クリア！）',
+    stageTitles: ['1-1：ケロリン桶の壁', '1-2：アヒル大行進', '1-3：ツルツル石鹸罠', '1-4：湯けむり地獄', '1-5：番台のカツラ大王'],
+    prologueTitle: '📖 プロローグ 〜ツルピカからの大逆転〜',
+    prologueText: '毛根を失い銭湯で涙する日々……だが磨けば光るこの頭こそ最強の武器！桶やアヒルを弾き飛ばし、目指せ奇跡の黄金増毛！',
+    outerBg: '#dbeafe',
+    floor: '#eff6ff',
+    border: '#3b82f6',
+    gridColor: 'rgba(59, 130, 246, 0.15)',
     obstacles: ['DUCK', 'BUCKET', 'SOAP'],
     friction: 0.985,
   },
   {
     id: 2,
-    name: '第2章：朝の満員電車',
-    bg: '#1e293b',
-    floor: '#334155',
-    tile: '#64748b',
+    shortName: '2.満員電車',
+    name: '第2章：朝の満員電車（達成で即クリア！）',
+    stageTitles: ['2-1：カバンの防波堤', '2-2：揺れるつり革', '2-3：居眠りサラリーマン', '2-4：急ブレーキの嵐', '2-5：車掌カツラ大王'],
+    prologueTitle: '📖 第2章 〜通勤ラッシュ突破作戦〜',
+    prologueText: '朝の山手線は戦場だ！居眠り客やビジネスカバンをツヤツヤ頭で弾き飛ばし、一番奥の特等席（ハウス）へ滑り込め！',
+    outerBg: '#e2e8f0',
+    floor: '#f8fafc',
+    border: '#64748b',
+    gridColor: 'rgba(100, 116, 139, 0.15)',
     obstacles: ['BAG', 'STRAP', 'SLEEPER'],
     friction: 0.982,
   },
   {
     id: 3,
-    name: '第3章：ブラック企業の廊下',
-    bg: '#3b0764',
-    floor: '#581c87',
-    tile: '#a855f7',
+    shortName: '3.ブラック企業',
+    name: '第3章：ブラック企業の廊下（達成で即クリア！）',
+    stageTitles: ['3-1：赤い督促状の壁', '3-2：崩れる書類の山', '3-3：激怒上司の説教', '3-4：サービス残業の罠', '3-5：ブラック社長カツラ王'],
+    prologueTitle: '📖 第3章 〜社畜からの下剋上〜',
+    prologueText: '山積みの書類に理不尽な怒り上司！「定時退社ァ！」の気合いで邪魔者を全員吹っ飛ばし、社長室のど真ん中を奪い取れ！',
+    outerBg: '#f3e8ff',
+    floor: '#faf5ff',
+    border: '#9333ea',
+    gridColor: 'rgba(147, 51, 234, 0.14)',
     obstacles: ['BILL', 'DOCS', 'BOSS_MAN'],
     friction: 0.980,
   },
   {
     id: 4,
-    name: '第4章：銀座の高級クラブ',
-    bg: '#451a03',
-    floor: '#78350f',
-    tile: '#f59e0b',
+    shortName: '4.銀座クラブ',
+    name: '第4章：銀座の高級クラブ（達成で即クリア！）',
+    stageTitles: ['4-1：シャンパンタワー', '4-2：一万円札束の壁', '4-3：グラサン黒服軍団', '4-4：VIPルームの攻防', '4-5：ドンペリカツラ大王'],
+    prologueTitle: '📖 第4章 〜成金VIPの夜〜',
+    prologueText: 'ついに辿り着いた銀座のネオン！札束やシャンパンを豪快に薙ぎ倒し、まばゆい黄金の輝きでVIP席の主役になれ！',
+    outerBg: '#fef3c7',
+    floor: '#fffbeb',
+    border: '#d97706',
+    gridColor: 'rgba(217, 119, 6, 0.15)',
     obstacles: ['CHAMPAGNE', 'MONEY', 'HOST'],
     friction: 0.988,
   },
   {
     id: 5,
-    name: '第5章：宇宙ステーション',
-    bg: '#020617',
-    floor: '#0f172a',
-    tile: '#38bdf8',
+    shortName: '5.宇宙',
+    name: '第5章：宇宙ステーション（達成で即クリア！）',
+    stageTitles: ['5-1：漂う隕石群', '5-2：人工衛星の軌道', '5-3：謎の円盤UFO', '5-4：無重力ワープ', '5-5：銀河皇帝カツラ大王'],
+    prologueTitle: '📖 最終章 〜宇宙一のツルピカ伝説〜',
+    prologueText: '頭の輝きはついに大気圏を突破！無重力の宇宙空間でUFOや隕石を弾き飛ばし、全宇宙の頂点へ君臨せよ！',
+    outerBg: '#e0e7ff',
+    floor: '#eef2ff',
+    border: '#4f46e5',
+    gridColor: 'rgba(79, 70, 229, 0.15)',
     obstacles: ['METEOR', 'SATELLITE', 'UFO'],
     friction: 0.994,
   },
@@ -60,17 +88,18 @@ const CHAPTERS = [
 const ONOMATOPOEIA = ['バチコーン!!', 'スカッ!!', 'ズシャア!!', 'ドゴォォン!!', 'ツルピカッ!!'];
 
 export default function HageringGame() {
-  const [screen, setScreen] = useState('TITLE'); // TITLE, STAGE_SELECT, PLAY, RESULT
+  const [screen, setScreen] = useState('TITLE'); // TITLE, PLAY, RESULT
   const [mode, setMode] = useState('STORY'); // STORY, ENDLESS
   const [chapterIdx, setChapterIdx] = useState(0);
   const [stageNum, setStageNum] = useState(1);
   const [unlockedStage, setUnlockedStage] = useState(1);
   const [isDebug, setIsDebug] = useState(false);
+  const [soundOn, setSoundOn] = useState(true);
+  const [showGuide, setShowGuide] = useState(false);
 
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
   const [shotsLeft, setShotsLeft] = useState(3);
-  const [combo, setCombo] = useState(0);
   const [feverGauge, setFeverGauge] = useState(0);
   const [isFever, setIsFever] = useState(false);
   const [resultInfo, setResultInfo] = useState({ clear: false, msg: '', bonus: 0 });
@@ -104,7 +133,12 @@ export default function HageringGame() {
     stageNum: 1,
     mode: 'STORY',
     endlessWave: 1,
+    soundOn: true,
   });
+
+  useEffect(() => {
+    gameRef.current.soundOn = soundOn;
+  }, [soundOn]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -114,7 +148,12 @@ export default function HageringGame() {
         setUnlockedStage(25);
       } else {
         const saved = localStorage.getItem('hagering_unlocked');
-        if (saved) setUnlockedStage(Math.min(25, Math.max(1, parseInt(saved, 10))));
+        if (saved) {
+          const val = Math.min(25, Math.max(1, parseInt(saved, 10)));
+          setUnlockedStage(val);
+          setChapterIdx(Math.floor((val - 1) / 5));
+          setStageNum(((val - 1) % 5) + 1);
+        }
       }
       const savedBest = localStorage.getItem('hagering_best');
       if (savedBest) setBestScore(parseInt(savedBest, 10));
@@ -122,6 +161,7 @@ export default function HageringGame() {
   }, []);
 
   const playSound = (type) => {
+    if (!gameRef.current.soundOn) return;
     try {
       if (!audioCtxRef.current) {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -192,9 +232,9 @@ export default function HageringGame() {
     g.mode = gameMode;
     g.endlessWave = wave;
 
-    g.stone = { x: w / 2, y: h - 110, vx: 0, vy: 0, r: 23, state: 'READY', angle: 0, trail: [] };
+    g.stone = { x: w / 2, y: h - 115, vx: 0, vy: 0, r: 23, state: 'READY', angle: 0, trail: [] };
     g.house = {
-      x: w / 2 + (gameMode === 'ENDLESS' ? (Math.random() - 0.5) * 100 : (sNum % 2 === 0 ? 45 : sNum === 3 ? -45 : 0)),
+      x: w / 2 + (gameMode === 'ENDLESS' ? (Math.random() - 0.5) * 100 : sNum % 2 === 0 ? 45 : sNum === 3 ? -45 : 0),
       y: 135,
       r: Math.max(46, 68 - sNum * 3),
     };
@@ -206,7 +246,7 @@ export default function HageringGame() {
     for (let i = 0; i < count; i++) {
       const kind = chap.obstacles[i % chap.obstacles.length];
       const ox = 48 + Math.random() * (w - 96);
-      const oy = 215 + Math.random() * (h - 375);
+      const oy = 215 + Math.random() * (h - 380);
       const isBoss = i === 0 && (sNum === 5 || wave % 3 === 0);
       obsList.push({
         id: i,
@@ -245,7 +285,6 @@ export default function HageringGame() {
     }
 
     setShotsLeft(g.shotsLeft);
-    setCombo(g.combo);
     setFeverGauge(g.feverGauge);
     setIsFever(g.isFever);
     if (gameMode === 'ENDLESS' && wave === 1) setScore(0);
@@ -428,11 +467,10 @@ export default function HageringGame() {
             }
 
             const sfxWord = ONOMATOPOEIA[Math.floor(Math.random() * ONOMATOPOEIA.length)];
-            spawnParticles(obs.x, obs.y, g.isFever ? '#facc15' : '#38bdf8', 18);
-            addComicEffect(obs.x, obs.y - 12, sfxWord, `+${gainPts} PTS`, g.isFever ? '#fde047' : '#ffffff');
+            spawnParticles(obs.x, obs.y, g.isFever ? '#facc15' : '#f97316', 18);
+            addComicEffect(obs.x, obs.y - 12, sfxWord, `+${gainPts} pt`, g.isFever ? '#fde047' : '#ffffff');
 
             setScore(g.score);
-            setCombo(g.combo);
             setFeverGauge(g.feverGauge);
             setIsFever(g.isFever);
           }
@@ -489,7 +527,7 @@ export default function HageringGame() {
 
             if (nextShots > 0) {
               setTimeout(() => {
-                g.stone = { x: g.width / 2, y: g.height - 110, vx: 0, vy: 0, r: 23, state: 'READY', angle: 0, trail: [] };
+                g.stone = { x: g.width / 2, y: g.height - 115, vx: 0, vy: 0, r: 23, state: 'READY', angle: 0, trail: [] };
                 g.isFever = false;
                 setIsFever(false);
               }, 550);
@@ -554,19 +592,14 @@ export default function HageringGame() {
         ctx.translate((Math.random() - 0.5) * g.shake, (Math.random() - 0.5) * g.shake);
       }
 
-      // 1. 背景＆章演出（graphics.js）
       drawStageBackground(ctx, chap, w, h, g.tick);
-
-      // 2. 的（ハウス）（graphics.js）
       drawHouseTarget(ctx, g.house, g.tick);
 
-      // 3. 障害物ベクターイラスト（graphics.js）
       g.obstacles.forEach((obs) => {
         if (obs.x < -80 || obs.x > w + 80 || obs.y < -80 || obs.y > h + 80) return;
         drawObstacleVector(ctx, obs, g.tick);
       });
 
-      // 4. スリングショットゴム＆発射予測矢印
       const st = g.stone;
       const isPulling = st.state === 'READY' && g.dragStart && g.dragCurrent;
       let pullDx = 0;
@@ -578,7 +611,7 @@ export default function HageringGame() {
         const pullY = st.y - pullDy * 0.45;
 
         ctx.save();
-        ctx.strokeStyle = '#fde047';
+        ctx.strokeStyle = '#d97706';
         ctx.lineWidth = 4;
         ctx.setLineDash([10, 8]);
         ctx.lineDashOffset = -g.tick * 1.5;
@@ -588,7 +621,7 @@ export default function HageringGame() {
         ctx.stroke();
         ctx.restore();
 
-        ctx.strokeStyle = '#f43f5e';
+        ctx.strokeStyle = '#ef4444';
         ctx.lineWidth = 5;
         ctx.beginPath();
         ctx.moveTo(st.x - 32, st.y);
@@ -597,18 +630,15 @@ export default function HageringGame() {
         ctx.stroke();
       }
 
-      // 5. 主役おやじ頭（graphics.js）
       drawHeroStone(ctx, st, isPulling, pullDx, pullDy, g.isFever, g.tick);
 
-      // 6. 滑走中のブラッシングガイド
       if (st.state === 'MOVING') {
-        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.fillStyle = '#92400e';
         ctx.font = 'bold 12px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('▲ 画面をコスコスこすって加速＆軌道修正！ ▲', w / 2, h - 28);
       }
 
-      // 7. パーティクル＆紙吹雪
       g.particles.forEach((p) => {
         ctx.globalAlpha = Math.max(0, p.life);
         ctx.fillStyle = p.color;
@@ -628,7 +658,6 @@ export default function HageringGame() {
         ctx.restore();
       });
 
-      // 8. マンガ風集中線＆擬音吹き出し（graphics.js）
       drawComicEffects(ctx, g.speedLinesTimer, g.comicEffects, w, h, g.tick);
 
       ctx.restore();
@@ -684,7 +713,7 @@ export default function HageringGame() {
           vx: (Math.random() - 0.5) * 2.5,
           vy: 2.2,
           life: 0.75,
-          color: '#bae6fd',
+          color: '#38bdf8',
           size: 3.5,
         });
       }
@@ -715,29 +744,36 @@ export default function HageringGame() {
 
   const shareToLine = () => {
     const url = typeof window !== 'undefined' ? window.location.origin : 'https://hagering.vercel.app';
-    const text = `【SUNミニゲーム第3弾】『ハゲリング』でスコア ${score.toLocaleString()} 点達成！ツルピカの頭で邪魔者を吹っ飛ばせ！\n${url}`;
+    const text = `【SUNミニゲーム第3弾】『ハゲリング』で最高 ${bestScore.toLocaleString()}pt 達成！愛らしいハゲオヤジで邪魔者を吹っ飛ばせ！\n${url}`;
     window.open(`https://line.me/R/msg/text/?${encodeURIComponent(text)}`, '_blank');
   };
 
+  const currentChap = CHAPTERS[chapterIdx];
+  const currentStageTitle = currentChap.stageTitles[stageNum - 1] || `${chapterIdx + 1}-${stageNum}`;
+
+  // プレイ画面（明るいポップ調Canvas）
   if (screen === 'PLAY') {
-    const chap = CHAPTERS[chapterIdx];
     return (
       <div style={styles.playWrapper}>
         <div style={styles.hudBar}>
           <div>
-            <div style={{ fontSize: '11px', color: '#93c5fd' }}>
-              {mode === 'ENDLESS' ? `エンドレス WAVE ${endlessWave}` : `${chap.name} - ${stageNum}`}
+            <div style={{ fontSize: '11px', color: '#b45309', fontWeight: 'bold' }}>
+              {mode === 'ENDLESS' ? `∞ エンドレス WAVE ${endlessWave}` : currentStageTitle}
             </div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold' }}>SCORE: {score.toLocaleString()}</div>
+            <div style={{ fontSize: '16px', fontWeight: '900', color: '#1e293b' }}>
+              SCORE: {score.toLocaleString()}pt
+            </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '12px' }}>残弾: {'🟡'.repeat(shotsLeft)}</div>
-            <div style={{ fontSize: '11px', color: isFever ? '#facc15' : '#cbd5e1' }}>
+            <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#334155' }}>
+              残弾: {'🟡'.repeat(shotsLeft)}
+            </div>
+            <div style={{ fontSize: '11px', fontWeight: 'bold', color: isFever ? '#d97706' : '#64748b' }}>
               {isFever ? '🔥黄金増毛MAX!' : `増毛ゲージ: ${feverGauge}%`}
             </div>
           </div>
           <button onClick={() => setScreen('TITLE')} style={styles.quitBtn}>
-            終了
+            戻る
           </button>
         </div>
 
@@ -755,120 +791,176 @@ export default function HageringGame() {
     );
   }
 
+  // タイトル＆リザルト画面（『びんぼ～る』完全準拠の携帯ゲーム機風ベゼルUI）
   return (
-    <div style={styles.outerContainer}>
-      <div style={styles.handheldBezel}>
-        <div style={styles.bezelTop}>
-          <span style={styles.powerLed} />
-          <span style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', color: '#94a3b8' }}>
-            SUN BOY POCKET - SERIES 03
-          </span>
+    <div style={styles.pageBg}>
+      <div style={styles.handheldBody}>
+        {/* 上部ステータスバー（章タイトル＋ミニアイコン） */}
+        <div style={styles.topStatusRow}>
+          <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#475569' }}>{currentChap.name}</span>
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+            <span>🪣</span>
+            <span>🐤</span>
+            <span>👑</span>
+          </div>
         </div>
 
-        <div style={styles.lcdScreen}>
+        {/* 内側メイン液晶カード（温かみのあるクリーム＆オレンジ枠） */}
+        <div style={styles.innerScreenCard}>
           {screen === 'TITLE' && (
-            <div style={styles.centerBox}>
-              <div style={styles.badge}>SUNミニゲームシリーズ 第3弾</div>
-              <h1 style={styles.titleLogo}>ハゲリング</h1>
-              <p style={styles.subCopy}>〜磨け！滑れ！邪魔者を吹っ飛ばせ！〜</p>
-
-              {/* 独自SVGベクターキャラエンブレム */}
-              <svg width="110" height="84" viewBox="0 0 110 84" style={{ margin: '4px 0 8px' }}>
-                <defs>
-                  <radialGradient id="headGrad" cx="35%" cy="30%" r="65%">
-                    <stop offset="0%" stopColor="#ffedd5" />
-                    <stop offset="60%" stopColor="#fdba74" />
-                    <stop offset="100%" stopColor="#ea580c" />
-                  </radialGradient>
-                </defs>
-                {/* 黄金オーラ */}
-                <circle cx="55" cy="44" r="36" fill="rgba(250, 204, 21, 0.22)" />
-                {/* 側頭部3本毛 */}
-                <path d="M23 40 L12 35 M22 45 L11 45 M23 50 L12 55" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" />
-                <path d="M87 40 L98 35 M88 45 L99 45 M87 50 L98 55" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" />
-                {/* 頭本体 */}
-                <circle cx="55" cy="45" r="31" fill="url(#headGrad)" stroke="#7c2d12" strokeWidth="2.5" />
-                {/* ピカッと光るハイライト */}
-                <ellipse cx="44" cy="31" rx="11" ry="5" transform="rotate(-25 44 31)" fill="#ffffff" opacity="0.9" />
-                <path d="M72 16 L75 23 L82 26 L75 29 L72 36 L69 29 L62 26 L69 23 Z" fill="#facc15" />
-                {/* 気合い顔 */}
-                <path d="M40 46 L50 51 M70 46 L60 51" stroke="#1e293b" strokeWidth="3" strokeLinecap="round" />
-                <circle cx="46" cy="55" r="3" fill="#1e293b" />
-                <circle cx="64" cy="55" r="3" fill="#1e293b" />
-                <path d="M48 63 Q55 69 62 63" stroke="#1e293b" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-              </svg>
-
-              <div style={{ fontSize: '12px', color: '#fde047', marginBottom: '12px' }}>
-                HIGH SCORE: {bestScore.toLocaleString()}
+            <>
+              {/* タイトルヘッダー行 */}
+              <div style={styles.titleHeaderRow}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '24px' }}>🏮</span>
+                  <h1 style={styles.gameTitle}>ハゲリング</h1>
+                </div>
+                <span style={styles.stagePill}>{currentStageTitle}</span>
               </div>
 
-              <button onClick={() => setScreen('STAGE_SELECT')} style={styles.primaryBtn}>
-                ▶ ストーリーモード（全25面）
-              </button>
-              <button onClick={startEndless} style={styles.secondaryBtn}>
-                ∞ エンドレス無限滑走
-              </button>
-
-              {isDebug && (
-                <div style={{ fontSize: '11px', color: '#4ade80', marginTop: '6px' }}>
-                  🔧 管理者デバッグモード有効（全章開放済）
+              {/* プロローグ＆ミニプレビュー物語ボックス（びんぼ～る風グラデ枠） */}
+              <div style={styles.prologueBox}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <HageOyajiSvg mood="normal" size={68} />
+                  <StagePreviewSvg chapterId={currentChap.id} />
                 </div>
-              )}
-            </div>
-          )}
+                <div style={styles.prologueTitle}>{currentChap.prologueTitle}</div>
+                <p style={styles.prologueText}>{currentChap.prologueText}</p>
+              </div>
 
-          {screen === 'STAGE_SELECT' && (
-            <div style={styles.selectBox}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ fontWeight: 'bold', fontSize: '14px', color: '#facc15' }}>ステージ選択</span>
-                <button onClick={() => setScreen('TITLE')} style={styles.smallBackBtn}>
-                  戻る
+              {/* 全5章アイコン横並びタブ */}
+              <div style={styles.chapterGrid}>
+                {CHAPTERS.map((ch, idx) => {
+                  const isSelected = idx === chapterIdx;
+                  const chapUnlocked = unlockedStage >= idx * 5 + 1;
+                  return (
+                    <button
+                      key={ch.id}
+                      onClick={() => {
+                        if (chapUnlocked) {
+                          setChapterIdx(idx);
+                          setStageNum(1);
+                        }
+                      }}
+                      style={{
+                        ...styles.chapterTabBtn,
+                        borderColor: isSelected ? '#d97706' : '#e2e8f0',
+                        backgroundColor: isSelected ? '#fffbeb' : '#ffffff',
+                        opacity: chapUnlocked ? 1 : 0.45,
+                      }}
+                    >
+                      <ChapterIconSvg chapterId={ch.id} size={26} />
+                      <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#334155', marginTop: '2px' }}>
+                        {ch.shortName}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* ステージ1〜5の小さな選択ドット */}
+              <div style={styles.stageSelectRow}>
+                {[1, 2, 3, 4, 5].map((s) => {
+                  const globalIdx = chapterIdx * 5 + s;
+                  const unlocked = globalIdx <= unlockedStage;
+                  const active = s === stageNum;
+                  return (
+                    <button
+                      key={s}
+                      disabled={!unlocked}
+                      onClick={() => setStageNum(s)}
+                      style={{
+                        ...styles.stageNumPill,
+                        backgroundColor: !unlocked ? '#e2e8f0' : active ? '#d97706' : '#fef3c7',
+                        color: !unlocked ? '#94a3b8' : active ? '#ffffff' : '#92400e',
+                      }}
+                    >
+                      {unlocked ? `${chapterIdx + 1}-${s}` : '🔒'}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* メインスタートボタン（オレンジ） */}
+              <button onClick={() => startStoryStage(chapterIdx, stageNum)} style={styles.startOrangeBtn}>
+                挑戦をスタートする！ →
+              </button>
+
+              {/* LINEシェアボタン（グリーン） */}
+              <button onClick={shareToLine} style={styles.lineGreenBtn}>
+                💬 LINEで友達にシェアする
+              </button>
+
+              {/* 最高pt / 音ON / 遊び方・図鑑 ピル3つ */}
+              <div style={styles.utilityRow}>
+                <div style={styles.utilPill}>🏆 最高 {bestScore.toLocaleString()}pt</div>
+                <button onClick={() => setSoundOn(!soundOn)} style={styles.utilPillBtn}>
+                  {soundOn ? '🔊 音ON' : '🔇 音OFF'}
+                </button>
+                <button onClick={() => setShowGuide(true)} style={styles.utilPillBtn}>
+                  📖 遊び方・図鑑
                 </button>
               </div>
 
-              <div style={styles.chapterScroll}>
-                {CHAPTERS.map((ch, cIdx) => (
-                  <div key={ch.id} style={styles.chapterCard}>
-                    <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '6px', color: '#e2e8f0' }}>
-                      {ch.name}
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px' }}>
-                      {[1, 2, 3, 4, 5].map((sNum) => {
-                        const globalStage = cIdx * 5 + sNum;
-                        const locked = globalStage > unlockedStage;
-                        return (
-                          <button
-                            key={sNum}
-                            disabled={locked}
-                            onClick={() => startStoryStage(cIdx, sNum)}
-                            style={{
-                              ...styles.stageBtn,
-                              backgroundColor: locked ? '#334155' : sNum === 5 ? '#dc2626' : '#2563eb',
-                              opacity: locked ? 0.5 : 1,
-                            }}
-                          >
-                            {locked ? '🔒' : sNum === 5 ? 'BOSS' : sNum}
-                          </button>
-                        );
-                      })}
-                    </div>
+              {/* エンドレスモード導線 */}
+              <button onClick={startEndless} style={styles.endlessSubBtn}>
+                ∞ エンドレス無限滑走モードで遊ぶ
+              </button>
+
+              {/* 管理者デバッグパネル（?key=sun777hage 時のみ表示） */}
+              {isDebug && (
+                <div style={styles.debugPanel}>
+                  <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#be123c', marginBottom: '6px' }}>
+                    🔧 管理者デバッグ（すーさん専用）
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '4px', marginBottom: '6px' }}>
+                    {[1, 2, 3, 4, 5].map((cNum) => (
+                      <button
+                        key={cNum}
+                        onClick={() => {
+                          setChapterIdx(cNum - 1);
+                          setStageNum(1);
+                          setUnlockedStage(25);
+                        }}
+                        style={styles.debugChapBtn}
+                      >
+                        {cNum}章
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setUnlockedStage(25);
+                      localStorage.setItem('hagering_unlocked', '25');
+                    }}
+                    style={styles.debugAllClearBtn}
+                  >
+                    全章クリア済みにする
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
           {screen === 'RESULT' && (
-            <div style={styles.centerBox}>
-              <div style={{ fontSize: '28px', fontWeight: '900', color: resultInfo.clear ? '#4ade80' : '#f87171' }}>
-                {resultInfo.clear ? 'STAGE CLEAR!!' : 'FAILED...'}
+            <div style={{ textAlign: 'center', padding: '10px 4px' }}>
+              <HageOyajiSvg mood={resultInfo.clear ? 'happy' : 'pull'} size={96} />
+              <div
+                style={{
+                  fontSize: '24px',
+                  fontWeight: '900',
+                  color: resultInfo.clear ? '#16a34a' : '#dc2626',
+                  marginTop: '6px',
+                }}
+              >
+                {resultInfo.clear ? 'ステージ達成！お見事！' : '惜しい！ハウス届かず！'}
               </div>
-              <p style={{ fontSize: '13px', margin: '8px 0', color: '#e2e8f0' }}>{resultInfo.msg}</p>
+              <p style={{ fontSize: '12px', color: '#475569', margin: '6px 0 12px' }}>{resultInfo.msg}</p>
 
-              <div style={styles.scoreCard}>
-                <div style={{ fontSize: '12px', color: '#94a3b8' }}>TOTAL SCORE</div>
-                <div style={{ fontSize: '26px', fontWeight: 'bold', color: '#facc15' }}>
-                  {score.toLocaleString()}
+              <div style={styles.resultScoreBox}>
+                <div style={{ fontSize: '11px', color: '#92400e', fontWeight: 'bold' }}>今回獲得スコア</div>
+                <div style={{ fontSize: '28px', fontWeight: '900', color: '#d97706' }}>
+                  {score.toLocaleString()}pt
                 </div>
               </div>
 
@@ -880,233 +972,402 @@ export default function HageringGame() {
                     const nextS = ((nextG - 1) % 5) + 1;
                     startStoryStage(nextC, nextS);
                   }}
-                  style={styles.primaryBtn}
+                  style={styles.startOrangeBtn}
                 >
-                  ▶ 次のステージへ進む
+                  次のステージへ進む！ →
                 </button>
               )}
 
-              <button onClick={() => startStoryStage(chapterIdx, stageNum)} style={styles.secondaryBtn}>
+              <button onClick={() => startStoryStage(chapterIdx, stageNum)} style={styles.retryBtn}>
                 ↻ もう一度挑戦する
               </button>
 
-              <button onClick={shareToLine} style={styles.lineBtn}>
-                💬 LINEでスコアを自慢する
+              <button onClick={shareToLine} style={styles.lineGreenBtn}>
+                💬 LINEで友達にシェアする
               </button>
 
-              <button onClick={() => setScreen('TITLE')} style={styles.smallBackBtn}>
-                タイトルへ戻る
+              <button onClick={() => setScreen('TITLE')} style={styles.backTitleLink}>
+                ← トップ画面に戻る
               </button>
             </div>
           )}
         </div>
 
-        <div id="ad-banner-slot" style={styles.adSlot}>
-          <span>AD SPACE（広告バナー枠）</span>
-        </div>
-
-        <div style={styles.crossLinkBox}>
-          <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px', fontWeight: 'bold' }}>
-            ▼ SUNミニゲームシリーズ好評配信中 ▼
-          </div>
-          <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
-            <a href="https://okura-tataki.vercel.app/" target="_blank" rel="noopener noreferrer" style={styles.seriesLink}>
-              ① オクラたたき
-            </a>
-            <a href="https://bin-ball.vercel.app/" target="_blank" rel="noopener noreferrer" style={styles.seriesLink}>
-              ② びんぼ～る
-            </a>
-          </div>
+        {/* ゲーム機下部装飾アイコンバー */}
+        <div style={styles.bottomDecoBar}>
+          <ChapterIconSvg chapterId={1} size={22} />
+          <ChapterIconSvg chapterId={2} size={22} />
+          <ChapterIconSvg chapterId={3} size={22} />
+          <ChapterIconSvg chapterId={4} size={22} />
+          <ChapterIconSvg chapterId={5} size={22} />
         </div>
       </div>
+
+      {/* 広告スペース枠（びんぼ～る同一デザイン） */}
+      <div id="ad-banner-slot" style={styles.adBannerBox}>
+        <div style={{ fontWeight: 'bold', fontSize: '11px', color: '#64748b' }}>
+          SPONSORED LINK / 広告スペース
+        </div>
+        <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+          （ここに無料広告バナーコードを配置できます）
+        </div>
+      </div>
+
+      {/* シリーズ相互リンク導線 */}
+      <div style={styles.seriesNavCard}>
+        <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#334155' }}>🎮 SUN ミニゲームシリーズ</span>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <a href="https://okura-tataki.vercel.app/" target="_blank" rel="noopener noreferrer" style={styles.seriesAnchor}>
+            第1弾『オクラたたき』
+          </a>
+          <a href="https://bin-ball.vercel.app/" target="_blank" rel="noopener noreferrer" style={styles.seriesAnchor}>
+            第2弾『びんぼ～る』
+          </a>
+        </div>
+      </div>
+
+      {/* フッターリンク */}
+      <div style={styles.footerLinks}>
+        <button onClick={() => setShowGuide(true)} style={styles.footerTextBtn}>
+          遊び方・図鑑
+        </button>
+        <span>運営者情報・プライバシーポリシー</span>
+        <span>© SUN</span>
+      </div>
+
+      {/* 遊び方・キャラ図鑑モーダル */}
+      {showGuide && (
+        <div style={styles.modalOverlay} onClick={() => setShowGuide(false)}>
+          <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <span style={{ fontWeight: '900', fontSize: '16px', color: '#b45309' }}>📖 遊び方・ハゲオヤジ図鑑</span>
+              <button onClick={() => setShowGuide(false)} style={styles.closeModalBtn}>
+                ✕
+              </button>
+            </div>
+
+            <div style={styles.guideSection}>
+              <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#1e293b', marginBottom: '4px' }}>
+                ① 引っ張って弾き飛ばせ！
+              </div>
+              <p style={{ fontSize: '12px', color: '#475569', lineHeight: '1.5' }}>
+                下の「ハゲオヤジ」を指で引っ張って離すと猛スピードで滑走！途中の邪魔者を吹っ飛ばしながら奥の赤い的（ハウス）に止めればクリアやで！
+              </p>
+            </div>
+
+            <div style={styles.guideSection}>
+              <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#1e293b', marginBottom: '4px' }}>
+                ② 滑走中にコスコス磨いて加速！
+              </div>
+              <p style={{ fontSize: '12px', color: '#475569', lineHeight: '1.5' }}>
+                滑っている最中に画面を指で左右にこすると、頭が磨かれてさらに加速＆軌道修正ができるで！
+              </p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginTop: '10px' }}>
+              <div style={styles.zukanCard}>
+                <HageOyajiSvg mood="normal" size={52} />
+                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#334155' }}>通常おやじ</div>
+              </div>
+              <div style={styles.zukanCard}>
+                <HageOyajiSvg mood="pull" size={52} />
+                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#334155' }}>踏ん張り顔</div>
+              </div>
+              <div style={styles.zukanCard}>
+                <HageOyajiSvg mood="fever" size={52} />
+                <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#d97706' }}>黄金増毛MAX</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 const styles = {
-  outerContainer: {
-    width: '100vw',
-    height: '100vh',
-    backgroundColor: '#0f172a',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '10px',
-  },
-  handheldBezel: {
+  pageBg: {
+    minHeight: '100vh',
     width: '100%',
-    maxWidth: '410px',
-    backgroundColor: '#1e293b',
-    borderRadius: '24px',
-    border: '4px solid #334155',
+    backgroundColor: '#fefce8',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: '12px 10px 24px',
+    overflowY: 'auto',
+    touchAction: 'auto',
+  },
+  handheldBody: {
+    width: '100%',
+    maxWidth: '400px',
+    backgroundColor: '#e2e8f0',
+    borderRadius: '26px',
+    padding: '12px 12px 10px',
+    boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)',
+    border: '2px solid #cbd5e1',
+  },
+  topStatusRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '0 6px 8px',
+  },
+  innerScreenCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: '18px',
+    border: '3px solid #d97706',
     padding: '12px',
-    boxShadow: '0 12px 30px rgba(0,0,0,0.6)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
   },
-  bezelTop: {
+  titleHeaderRow: {
     display: 'flex',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: '8px',
-    paddingLeft: '4px',
+    marginBottom: '10px',
   },
-  powerLed: {
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    backgroundColor: '#22c55e',
-    boxShadow: '0 0 6px #22c55e',
+  gameTitle: {
+    fontSize: '22px',
+    fontWeight: '900',
+    color: '#1e293b',
+    letterSpacing: '0.5px',
   },
-  lcdScreen: {
-    backgroundColor: '#090d16',
-    borderRadius: '12px',
-    border: '3px solid #020617',
-    padding: '14px',
-    minHeight: '390px',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-  },
-  centerBox: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    textAlign: 'center',
-  },
-  badge: {
-    backgroundColor: '#2563eb',
-    color: '#fff',
+  stagePill: {
     fontSize: '11px',
     fontWeight: 'bold',
-    padding: '3px 10px',
+    color: '#b45309',
+    backgroundColor: '#fef3c7',
+    border: '1.5px solid #f59e0b',
     borderRadius: '999px',
-    marginBottom: '6px',
+    padding: '3px 10px',
   },
-  titleLogo: {
-    fontSize: '36px',
-    fontWeight: '900',
-    color: '#facc15',
-    textShadow: '0 3px 0 #b45309',
-    letterSpacing: '2px',
+  prologueBox: {
+    background: 'linear-gradient(180deg, #e0f2fe 0%, #fef08a 100%)',
+    borderRadius: '14px',
+    border: '1.5px solid #fcd34d',
+    padding: '10px 12px',
+    textAlign: 'center',
+    marginBottom: '10px',
   },
-  subCopy: {
+  prologueTitle: {
     fontSize: '12px',
-    color: '#cbd5e1',
-    marginBottom: '6px',
-  },
-  primaryBtn: {
-    width: '100%',
-    padding: '12px',
-    backgroundColor: '#eab308',
-    color: '#0f172a',
     fontWeight: '900',
-    fontSize: '14px',
-    border: 'none',
-    borderRadius: '10px',
-    cursor: 'pointer',
-    marginBottom: '8px',
-    boxShadow: '0 4px 0 #a16207',
+    color: '#b45309',
+    marginBottom: '4px',
   },
-  secondaryBtn: {
-    width: '100%',
-    padding: '10px',
-    backgroundColor: '#3b82f6',
-    color: '#ffffff',
+  prologueText: {
+    fontSize: '11px',
+    color: '#334155',
+    lineHeight: '1.5',
+  },
+  chapterGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(5, 1fr)',
+    gap: '5px',
+    marginBottom: '8px',
+  },
+  chapterTabBtn: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '6px 2px',
+    borderRadius: '10px',
+    border: '2px solid #e2e8f0',
+    cursor: 'pointer',
+  },
+  stageSelectRow: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(5, 1fr)',
+    gap: '5px',
+    marginBottom: '10px',
+  },
+  stageNumPill: {
+    padding: '5px 0',
+    borderRadius: '8px',
+    border: 'none',
+    fontSize: '11px',
     fontWeight: 'bold',
-    fontSize: '13px',
-    border: 'none',
-    borderRadius: '10px',
     cursor: 'pointer',
+  },
+  startOrangeBtn: {
+    width: '100%',
+    padding: '13px',
+    background: 'linear-gradient(180deg, #d97706 0%, #b45309 100%)',
+    color: '#ffffff',
+    fontSize: '16px',
+    fontWeight: '900',
+    border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    boxShadow: '0 4px 0 #78350f',
     marginBottom: '8px',
   },
-  lineBtn: {
+  lineGreenBtn: {
     width: '100%',
-    padding: '10px',
+    padding: '11px',
     backgroundColor: '#06c755',
     color: '#ffffff',
-    fontWeight: 'bold',
-    fontSize: '13px',
+    fontSize: '14px',
+    fontWeight: '900',
     border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    boxShadow: '0 3px 0 #047857',
+    marginBottom: '10px',
+  },
+  utilityRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '6px',
+    marginBottom: '8px',
+  },
+  utilPill: {
+    flex: 1.2,
+    backgroundColor: '#fef9c3',
+    border: '1.5px solid #facc15',
+    borderRadius: '999px',
+    padding: '6px 4px',
+    fontSize: '11px',
+    fontWeight: 'bold',
+    color: '#854d0e',
+    textAlign: 'center',
+  },
+  utilPillBtn: {
+    flex: 1,
+    backgroundColor: '#fef9c3',
+    border: '1.5px solid #facc15',
+    borderRadius: '999px',
+    padding: '6px 4px',
+    fontSize: '11px',
+    fontWeight: 'bold',
+    color: '#854d0e',
+    cursor: 'pointer',
+  },
+  endlessSubBtn: {
+    width: '100%',
+    padding: '7px',
+    backgroundColor: '#eff6ff',
+    border: '1.5px solid #93c5fd',
     borderRadius: '10px',
+    color: '#1d4ed8',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+  },
+  debugPanel: {
+    marginTop: '10px',
+    backgroundColor: '#fff1f2',
+    border: '2px solid #fda4af',
+    borderRadius: '12px',
+    padding: '10px',
+  },
+  debugChapBtn: {
+    padding: '7px 0',
+    backgroundColor: '#e11d48',
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: '12px',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+  },
+  debugAllClearBtn: {
+    width: '100%',
+    padding: '8px',
+    backgroundColor: '#b45309',
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: '12px',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+  },
+  bottomDecoBar: {
+    display: 'flex',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingTop: '8px',
+  },
+  adBannerBox: {
+    width: '100%',
+    maxWidth: '400px',
+    backgroundColor: '#ffffff',
+    border: '1.5px dashed #cbd5e1',
+    borderRadius: '12px',
+    padding: '10px',
+    textAlign: 'center',
+    marginTop: '10px',
+  },
+  seriesNavCard: {
+    width: '100%',
+    maxWidth: '400px',
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
+    border: '1px solid #e2e8f0',
+    padding: '10px 12px',
+    marginTop: '8px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    alignItems: 'center',
+  },
+  seriesAnchor: {
+    fontSize: '12px',
+    fontWeight: 'bold',
+    color: '#0d9488',
+    textDecoration: 'none',
+    backgroundColor: '#f0fdfa',
+    padding: '5px 10px',
+    borderRadius: '8px',
+    border: '1px solid #99f6e4',
+  },
+  footerLinks: {
+    marginTop: '10px',
+    display: 'flex',
+    gap: '10px',
+    fontSize: '11px',
+    color: '#64748b',
+    alignItems: 'center',
+  },
+  footerTextBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#64748b',
+    textDecoration: 'underline',
+    fontSize: '11px',
+    cursor: 'pointer',
+  },
+  resultScoreBox: {
+    backgroundColor: '#fffbeb',
+    border: '2px solid #f59e0b',
+    borderRadius: '12px',
+    padding: '10px',
+    marginBottom: '12px',
+  },
+  retryBtn: {
+    width: '100%',
+    padding: '11px',
+    backgroundColor: '#3b82f6',
+    color: '#ffffff',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    border: 'none',
+    borderRadius: '12px',
     cursor: 'pointer',
     marginBottom: '8px',
   },
-  smallBackBtn: {
-    padding: '6px 14px',
-    backgroundColor: '#334155',
-    color: '#e2e8f0',
-    fontSize: '12px',
+  backTitleLink: {
+    background: 'none',
     border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-  },
-  selectBox: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '360px',
-  },
-  chapterScroll: {
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    paddingRight: '2px',
-  },
-  chapterCard: {
-    backgroundColor: '#1e293b',
-    padding: '8px',
-    borderRadius: '8px',
-    border: '1px solid #334155',
-  },
-  stageBtn: {
-    padding: '8px 0',
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: '12px',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-  },
-  scoreCard: {
-    backgroundColor: '#1e293b',
-    padding: '10px 24px',
-    borderRadius: '10px',
-    margin: '10px 0 14px',
-    border: '1px solid #334155',
-  },
-  adSlot: {
-    height: '52px',
-    backgroundColor: '#0f172a',
-    border: '1px dashed #475569',
-    borderRadius: '8px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: '11px',
     color: '#64748b',
-  },
-  crossLinkBox: {
-    textAlign: 'center',
-    backgroundColor: '#0f172a',
-    padding: '8px',
-    borderRadius: '10px',
-  },
-  seriesLink: {
-    flex: 1,
-    padding: '6px 8px',
-    backgroundColor: '#1e293b',
-    color: '#38bdf8',
-    textDecoration: 'none',
     fontSize: '12px',
     fontWeight: 'bold',
-    borderRadius: '6px',
-    border: '1px solid #334155',
+    cursor: 'pointer',
+    marginTop: '4px',
   },
   playWrapper: {
     width: '100vw',
     height: '100vh',
-    backgroundColor: '#090d16',
+    backgroundColor: '#fefce8',
     position: 'relative',
     overflow: 'hidden',
   },
@@ -1118,21 +1379,62 @@ const styles = {
     width: '100%',
     maxWidth: '420px',
     height: '52px',
-    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '0 12px',
     zIndex: 10,
-    borderBottom: '1px solid #334155',
+    borderBottom: '2px solid #fcd34d',
   },
   quitBtn: {
-    padding: '5px 10px',
-    backgroundColor: '#475569',
-    color: '#fff',
+    padding: '6px 12px',
+    backgroundColor: '#e2e8f0',
+    color: '#334155',
     border: 'none',
-    borderRadius: '6px',
-    fontSize: '11px',
+    borderRadius: '8px',
+    fontSize: '12px',
     fontWeight: 'bold',
+  },
+  modalOverlay: {
+    position: 'fixed',
+    inset: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '16px',
+    zIndex: 50,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: '370px',
+    backgroundColor: '#ffffff',
+    borderRadius: '18px',
+    border: '3px solid #d97706',
+    padding: '16px',
+  },
+  closeModalBtn: {
+    backgroundColor: '#f1f5f9',
+    border: 'none',
+    borderRadius: '50%',
+    width: '28px',
+    height: '28px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+  },
+  guideSection: {
+    backgroundColor: '#fffbeb',
+    borderRadius: '10px',
+    padding: '10px',
+    marginBottom: '8px',
+    border: '1px solid #fde68a',
+  },
+  zukanCard: {
+    backgroundColor: '#f8fafc',
+    borderRadius: '10px',
+    padding: '8px 4px',
+    textAlign: 'center',
+    border: '1px solid #e2e8f0',
   },
 };

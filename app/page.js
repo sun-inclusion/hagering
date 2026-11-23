@@ -6,6 +6,7 @@ import {
   ChapterIconSvg,
   StagePreviewSvg,
   drawStageBackground,
+  drawFloorGimmicks,
   drawHouseTarget,
   drawObstacleVector,
   drawHeroStone,
@@ -16,10 +17,10 @@ const CHAPTERS = [
   {
     id: 1,
     shortName: '1.銭湯',
-    name: '第1章：銭湯の洗い場（達成で即クリア！）',
+    name: '第1章：銭湯の洗い場（標的撃破でゴール開放！）',
     stageTitles: ['1-1：ケロリン桶の壁', '1-2：アヒル大行進', '1-3：ツルツル石鹸罠', '1-4：湯けむり地獄', '1-5：番台のカツラ大王'],
     prologueTitle: '📖 プロローグ 〜ツルピカからの大逆転〜',
-    prologueText: '毛根を失い銭湯で涙する日々……だが磨けば光るこの頭こそ最強の武器！桶やアヒルを弾き飛ばし、目指せ奇跡の黄金増毛！',
+    prologueText: '赤枠の「TARGET」をすべて弾き飛ばすとゴールが開放！滑走中に長押しで急ブレーキをかけて、動くサークルのど真ん中を狙え！',
     outerBg: '#dbeafe',
     floor: '#eff6ff',
     border: '#3b82f6',
@@ -30,10 +31,10 @@ const CHAPTERS = [
   {
     id: 2,
     shortName: '2.満員電車',
-    name: '第2章：朝の満員電車（達成で即クリア！）',
+    name: '第2章：朝の満員電車（標的撃破でゴール開放！）',
     stageTitles: ['2-1：カバンの防波堤', '2-2：揺れるつり革', '2-3：居眠りサラリーマン', '2-4：急ブレーキの嵐', '2-5：車掌カツラ大王'],
     prologueTitle: '📖 第2章 〜通勤ラッシュ突破作戦〜',
-    prologueText: '朝の山手線は戦場だ！居眠り客やビジネスカバンをツヤツヤ頭で弾き飛ばし、一番奥の特等席（ハウス）へ滑り込め！',
+    prologueText: '朝の山手線は戦場だ！超加速床と反発バンパーを乗りこなし、標的を吹っ飛ばしてから特等席へ急ブレーキで滑り込め！',
     outerBg: '#e2e8f0',
     floor: '#f8fafc',
     border: '#64748b',
@@ -44,10 +45,10 @@ const CHAPTERS = [
   {
     id: 3,
     shortName: '3.ブラック企業',
-    name: '第3章：ブラック企業の廊下（達成で即クリア！）',
+    name: '第3章：ブラック企業の廊下（標的撃破でゴール開放！）',
     stageTitles: ['3-1：赤い督促状の壁', '3-2：崩れる書類の山', '3-3：激怒上司の説教', '3-4：サービス残業の罠', '3-5：ブラック社長カツラ王'],
     prologueTitle: '📖 第3章 〜社畜からの下剋上〜',
-    prologueText: '山積みの書類に理不尽な怒り上司！「定時退社ァ！」の気合いで邪魔者を全員吹っ飛ばし、社長室のど真ん中を奪い取れ！',
+    prologueText: '山積みの書類に理不尽な怒り上司！「定時退社ァ！」の気合いで赤枠の標的を全員吹っ飛ばし、動く社長室を奪い取れ！',
     outerBg: '#f3e8ff',
     floor: '#faf5ff',
     border: '#9333ea',
@@ -58,10 +59,10 @@ const CHAPTERS = [
   {
     id: 4,
     shortName: '4.銀座クラブ',
-    name: '第4章：銀座の高級クラブ（達成で即クリア！）',
+    name: '第4章：銀座の高級クラブ（標的撃破でゴール開放！）',
     stageTitles: ['4-1：シャンパンタワー', '4-2：一万円札束の壁', '4-3：グラサン黒服軍団', '4-4：VIPルームの攻防', '4-5：ドンペリカツラ大王'],
     prologueTitle: '📖 第4章 〜成金VIPの夜〜',
-    prologueText: 'ついに辿り着いた銀座のネオン！札束やシャンパンを豪快に薙ぎ倒し、まばゆい黄金の輝きでVIP席の主役になれ！',
+    prologueText: 'ついに辿り着いた銀座のネオン！高速で左右に動くVIPサークルを見極め、黄金の輝きで一発逆転を決めろ！',
     outerBg: '#fef3c7',
     floor: '#fffbeb',
     border: '#d97706',
@@ -72,10 +73,10 @@ const CHAPTERS = [
   {
     id: 5,
     shortName: '5.宇宙',
-    name: '第5章：宇宙ステーション（達成で即クリア！）',
+    name: '第5章：宇宙ステーション（標的撃破でゴール開放！）',
     stageTitles: ['5-1：漂う隕石群', '5-2：人工衛星の軌道', '5-3：謎の円盤UFO', '5-4：無重力ワープ', '5-5：銀河皇帝カツラ大王'],
     prologueTitle: '📖 最終章 〜宇宙一のツルピカ伝説〜',
-    prologueText: '頭の輝きはついに大気圏を突破！無重力の宇宙空間でUFOや隕石を弾き飛ばし、全宇宙の頂点へ君臨せよ！',
+    prologueText: '摩擦ゼロに近い無重力空間！長押しブレーキを駆使しないと宇宙の果てまで滑っていくぞ！全宇宙の頂点へ君臨せよ！',
     outerBg: '#e0e7ff',
     floor: '#eef2ff',
     border: '#4f46e5',
@@ -88,8 +89,8 @@ const CHAPTERS = [
 const ONOMATOPOEIA = ['バチコーン!!', 'スカッ!!', 'ズシャア!!', 'ドゴォォン!!', 'ツルピカッ!!'];
 
 export default function HageringGame() {
-  const [screen, setScreen] = useState('TITLE'); // TITLE, PLAY, RESULT
-  const [mode, setMode] = useState('STORY'); // STORY, ENDLESS
+  const [screen, setScreen] = useState('TITLE');
+  const [mode, setMode] = useState('STORY');
   const [chapterIdx, setChapterIdx] = useState(0);
   const [stageNum, setStageNum] = useState(1);
   const [unlockedStage, setUnlockedStage] = useState(1);
@@ -100,6 +101,7 @@ export default function HageringGame() {
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
   const [shotsLeft, setShotsLeft] = useState(3);
+  const [targetsLeft, setTargetsLeft] = useState(1);
   const [feverGauge, setFeverGauge] = useState(0);
   const [isFever, setIsFever] = useState(false);
   const [resultInfo, setResultInfo] = useState({ clear: false, msg: '', bonus: 0 });
@@ -113,8 +115,9 @@ export default function HageringGame() {
     height: 640,
     tick: 0,
     stone: { x: 180, y: 520, vx: 0, vy: 0, r: 23, state: 'READY', angle: 0, trail: [] },
-    house: { x: 180, y: 130, r: 65 },
+    house: { x: 180, y: 130, baseX: 180, r: 58, moveRange: 0, moveSpeed: 0 },
     obstacles: [],
+    gimmicks: [],
     particles: [],
     confetti: [],
     comicEffects: [],
@@ -122,6 +125,7 @@ export default function HageringGame() {
     dragStart: null,
     dragCurrent: null,
     lastBrushPos: null,
+    isBraking: false,
     shake: 0,
     hitStop: 0,
     combo: 0,
@@ -204,10 +208,26 @@ export default function HageringGame() {
       } else if (type === 'brush') {
         osc.type = 'sine';
         osc.frequency.setValueAtTime(750 + Math.random() * 350, now);
-        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.setValueAtTime(0.05, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
         osc.start(now);
         osc.stop(now + 0.05);
+      } else if (type === 'brake') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.linearRampToValueAtTime(70, now + 0.08);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'reject') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.setValueAtTime(110, now + 0.12);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
       } else if (type === 'clear') {
         osc.type = 'triangle';
         [523, 659, 784, 1046].forEach((freq, idx) => {
@@ -231,32 +251,76 @@ export default function HageringGame() {
     g.stageNum = sNum;
     g.mode = gameMode;
     g.endlessWave = wave;
+    g.isBraking = false;
 
     g.stone = { x: w / 2, y: h - 115, vx: 0, vy: 0, r: 23, state: 'READY', angle: 0, trail: [] };
+
+    // サークル（ハウス）の移動設定（ステージが進むほど大きく速く左右に揺れる）
+    const levelFactor = gameMode === 'ENDLESS' ? wave : cIdx * 5 + sNum;
+    const moveRange = levelFactor === 1 ? 35 : Math.min(w * 0.32, 45 + levelFactor * 4.5);
+    const moveSpeed = 0.022 + Math.min(0.045, levelFactor * 0.0022);
     g.house = {
-      x: w / 2 + (gameMode === 'ENDLESS' ? (Math.random() - 0.5) * 100 : sNum % 2 === 0 ? 45 : sNum === 3 ? -45 : 0),
-      y: 135,
-      r: Math.max(46, 68 - sNum * 3),
+      x: w / 2,
+      baseX: w / 2,
+      y: 132,
+      r: Math.max(42, 62 - Math.floor(levelFactor * 0.7)),
+      moveRange,
+      moveSpeed,
     };
 
+    // ギミック床・バンパー配置
+    const gimmicks = [];
+    if (levelFactor >= 2) {
+      gimmicks.push({
+        type: 'ACCEL',
+        x: w * (sNum % 2 === 0 ? 0.32 : 0.68),
+        y: h * 0.56,
+        w: 66,
+        h: 74,
+      });
+    }
+    if (levelFactor >= 3) {
+      gimmicks.push({
+        type: 'BUMPER',
+        x: w * (sNum % 2 === 0 ? 0.72 : 0.28),
+        y: h * 0.42,
+        r: 21,
+      });
+    }
+    if (levelFactor >= 8) {
+      gimmicks.push({
+        type: 'BUMPER',
+        x: w * 0.5,
+        y: h * 0.34,
+        r: 19,
+      });
+    }
+    g.gimmicks = gimmicks;
+
+    // 障害物＆撃破必須ターゲット生成
     const obsList = [];
     const chap = CHAPTERS[cIdx];
-    const count = gameMode === 'ENDLESS' ? Math.min(18, 5 + wave * 2) : 4 + cIdx * 2 + sNum;
+    const count = gameMode === 'ENDLESS' ? Math.min(16, 5 + wave) : 4 + cIdx + sNum;
+    const targetQuota = gameMode === 'ENDLESS' ? Math.min(4, 1 + Math.floor(wave / 2)) : Math.min(3, 1 + Math.floor((cIdx + sNum) / 3));
 
     for (let i = 0; i < count; i++) {
       const kind = chap.obstacles[i % chap.obstacles.length];
-      const ox = 48 + Math.random() * (w - 96);
-      const oy = 215 + Math.random() * (h - 380);
+      const ox = 52 + ((i * 79 + sNum * 37) % Math.max(120, w - 104));
+      const oy = 215 + ((i * 63 + cIdx * 29) % Math.max(140, h - 385));
       const isBoss = i === 0 && (sNum === 5 || wave % 3 === 0);
+      const isTarget = i < targetQuota;
+      const patrolSpeed = isTarget && levelFactor >= 4 ? (i % 2 === 0 ? 1.4 : -1.4) : 0;
+
       obsList.push({
         id: i,
         x: ox,
         y: oy,
-        vx: 0,
+        vx: patrolSpeed,
         vy: 0,
         r: isBoss ? 28 : 20,
         kind: isBoss ? 'WIG_KING' : kind,
         isBoss,
+        isTarget,
         blasted: false,
         rot: 0,
         vrot: 0,
@@ -285,6 +349,7 @@ export default function HageringGame() {
     }
 
     setShotsLeft(g.shotsLeft);
+    setTargetsLeft(targetQuota);
     setFeverGauge(g.feverGauge);
     setIsFever(g.isFever);
     if (gameMode === 'ENDLESS' && wave === 1) setScore(0);
@@ -325,6 +390,7 @@ export default function HageringGame() {
       canvas.height = h;
       gameRef.current.width = w;
       gameRef.current.height = h;
+      gameRef.current.house.baseX = w / 2;
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -396,6 +462,21 @@ export default function HageringGame() {
         g.speedLinesTimer -= 1;
       }
 
+      // 1. サークル（ハウス）の左右移動アニメーション
+      if (g.house.moveRange > 0) {
+        g.house.x = g.house.baseX + Math.sin(g.tick * g.house.moveSpeed) * g.house.moveRange;
+      }
+
+      // 2. パトロールする障害物の左右移動
+      g.obstacles.forEach((obs) => {
+        if (!obs.blasted && obs.vx !== 0) {
+          obs.x += obs.vx;
+          if (obs.x < 42 || obs.x > g.width - 42) {
+            obs.vx *= -1;
+          }
+        }
+      });
+
       const st = g.stone;
 
       if (st.state === 'MOVING') {
@@ -405,10 +486,45 @@ export default function HageringGame() {
 
         st.x += st.vx;
         st.y += st.vy;
-        st.vx *= chap.friction;
-        st.vy *= chap.friction;
+
+        // 長押し急ブレーキ適用
+        const currentFriction = g.isBraking ? 0.88 : chap.friction;
+        st.vx *= currentFriction;
+        st.vy *= currentFriction;
         st.angle += Math.hypot(st.vx, st.vy) * 0.045;
 
+        if (g.isBraking && g.tick % 4 === 0) {
+          playSound('brake');
+          spawnParticles(st.x, st.y + 14, '#ef4444', 3);
+        }
+
+        // ギミック床＆バンパー判定
+        g.gimmicks.forEach((gm) => {
+          if (gm.type === 'ACCEL') {
+            if (Math.abs(st.x - gm.x) < gm.w / 2 && Math.abs(st.y - gm.y) < gm.h / 2) {
+              st.vy -= 0.75;
+              if (g.tick % 5 === 0) spawnParticles(st.x, st.y, '#38bdf8', 4);
+            }
+          } else if (gm.type === 'BUMPER') {
+            const dx = st.x - gm.x;
+            const dy = st.y - gm.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < st.r + gm.r && dist > 0) {
+              const nx = dx / dist;
+              const ny = dy / dist;
+              st.x = gm.x + nx * (st.r + gm.r + 2);
+              st.y = gm.y + ny * (st.r + gm.r + 2);
+              const spd = Math.max(11, Math.hypot(st.vx, st.vy) * 1.15);
+              st.vx = nx * spd;
+              st.vy = ny * spd;
+              g.shake = 10;
+              playSound('hit');
+              spawnParticles(gm.x, gm.y, '#f43f5e', 14);
+            }
+          }
+        });
+
+        // 壁バウンド
         if (st.x - st.r < 14) {
           st.x = 14 + st.r;
           st.vx = Math.abs(st.vx) * 0.85;
@@ -423,6 +539,7 @@ export default function HageringGame() {
           st.vy = Math.abs(st.vy) * 0.75;
         }
 
+        // 障害物衝突判定
         g.obstacles.forEach((obs) => {
           if (obs.blasted) return;
           const dx = obs.x - st.x;
@@ -441,12 +558,15 @@ export default function HageringGame() {
             obs.vrot = (Math.random() > 0.5 ? 1 : -1) * 0.4;
 
             if (!g.isFever) {
-              st.vx -= nx * 2.0;
-              st.vy -= ny * 2.0;
+              st.vx -= nx * 2.2;
+              st.vy -= ny * 2.2;
             }
 
+            const remainTargets = g.obstacles.filter((o) => o.isTarget && !o.blasted).length;
+            setTargetsLeft(remainTargets);
+
             g.combo += 1;
-            const gainPts = (obs.isBoss ? 500 : 150) * g.combo * (g.isFever ? 2 : 1);
+            const gainPts = (obs.isBoss ? 500 : obs.isTarget ? 300 : 150) * g.combo * (g.isFever ? 2 : 1);
             g.score += gainPts;
             g.shake = obs.isBoss ? 18 : 11;
             g.hitStop = obs.isBoss ? 4 : 2;
@@ -466,9 +586,9 @@ export default function HageringGame() {
               playSound('hit');
             }
 
-            const sfxWord = ONOMATOPOEIA[Math.floor(Math.random() * ONOMATOPOEIA.length)];
+            const sfxWord = obs.isTarget ? '標的撃破!!' : ONOMATOPOEIA[Math.floor(Math.random() * ONOMATOPOEIA.length)];
             spawnParticles(obs.x, obs.y, g.isFever ? '#facc15' : '#f97316', 18);
-            addComicEffect(obs.x, obs.y - 12, sfxWord, `+${gainPts} pt`, g.isFever ? '#fde047' : '#ffffff');
+            addComicEffect(obs.x, obs.y - 12, sfxWord, `+${gainPts} pt`, obs.isTarget ? '#4ade80' : '#ffffff');
 
             setScore(g.score);
             setFeverGauge(g.feverGauge);
@@ -476,17 +596,20 @@ export default function HageringGame() {
           }
         });
 
+        // 停止判定
         const speed = Math.hypot(st.vx, st.vy);
         if (speed < 0.35 || st.y > g.height + 40) {
           st.vx = 0;
           st.vy = 0;
           st.state = 'STOPPED';
           st.trail = [];
+          g.isBraking = false;
 
+          const remainTargets = g.obstacles.filter((o) => o.isTarget && !o.blasted).length;
           const distToHouse = Math.hypot(st.x - g.house.x, st.y - g.house.y);
-          const inHouse = distToHouse <= g.house.r + st.r * 0.4;
+          const inHouse = distToHouse <= g.house.r + st.r * 0.35;
 
-          if (inHouse) {
+          if (inHouse && remainTargets === 0) {
             const centerBonus = Math.round(Math.max(300, (1 - distToHouse / g.house.r) * 1500));
             g.score += centerBonus;
             setScore(g.score);
@@ -514,13 +637,18 @@ export default function HageringGame() {
                 }
                 setResultInfo({
                   clear: true,
-                  msg: distToHouse < 22 ? 'ど真ん中！神業ツルピカショット！' : '見事ハウスイン！爽快クリア！',
+                  msg: distToHouse < 20 ? 'ど真ん中！神業ツルピカショット！' : '標的撃破＆見事ハウスイン！',
                   bonus: centerBonus,
                 });
                 setScreen('RESULT');
               }
             }, 1100);
           } else {
+            if (inHouse && remainTargets > 0) {
+              playSound('reject');
+              addComicEffect(g.house.x, g.house.y, 'ノルマ未達成!!', `残り標的 ${remainTargets}体！`, '#f87171');
+            }
+
             const nextShots = g.shotsLeft - 1;
             g.shotsLeft = nextShots;
             setShotsLeft(nextShots);
@@ -530,7 +658,7 @@ export default function HageringGame() {
                 g.stone = { x: g.width / 2, y: g.height - 115, vx: 0, vy: 0, r: 23, state: 'READY', angle: 0, trail: [] };
                 g.isFever = false;
                 setIsFever(false);
-              }, 550);
+              }, 650);
             } else {
               if (g.score > bestScore) {
                 setBestScore(g.score);
@@ -539,11 +667,11 @@ export default function HageringGame() {
               setTimeout(() => {
                 setResultInfo({
                   clear: false,
-                  msg: 'ハウスに届かず！もう一丁磨いて挑戦や！',
+                  msg: remainTargets > 0 ? '赤枠の「TARGET」を全部倒してからゴールや！' : '動くサークルにピタッと止めろ！',
                   bonus: 0,
                 });
                 setScreen('RESULT');
-              }, 750);
+              }, 800);
             }
           }
         }
@@ -593,7 +721,10 @@ export default function HageringGame() {
       }
 
       drawStageBackground(ctx, chap, w, h, g.tick);
-      drawHouseTarget(ctx, g.house, g.tick);
+      drawFloorGimmicks(ctx, g.gimmicks, g.tick);
+
+      const allTargetsCleared = g.obstacles.filter((o) => o.isTarget && !o.blasted).length === 0;
+      drawHouseTarget(ctx, g.house, allTargetsCleared, g.tick);
 
       g.obstacles.forEach((obs) => {
         if (obs.x < -80 || obs.x > w + 80 || obs.y < -80 || obs.y > h + 80) return;
@@ -617,7 +748,7 @@ export default function HageringGame() {
         ctx.lineDashOffset = -g.tick * 1.5;
         ctx.beginPath();
         ctx.moveTo(st.x, st.y);
-        ctx.lineTo(st.x + pullDx * 2.0, st.y + pullDy * 2.0);
+        ctx.lineTo(st.x + pullDx * 1.7, st.y + pullDy * 1.7);
         ctx.stroke();
         ctx.restore();
 
@@ -630,13 +761,13 @@ export default function HageringGame() {
         ctx.stroke();
       }
 
-      drawHeroStone(ctx, st, isPulling, pullDx, pullDy, g.isFever, g.tick);
+      drawHeroStone(ctx, st, isPulling, pullDx, pullDy, g.isFever, g.isBraking, g.tick);
 
       if (st.state === 'MOVING') {
         ctx.fillStyle = '#92400e';
-        ctx.font = 'bold 12px sans-serif';
+        ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('▲ 画面をコスコスこすって加速＆軌道修正！ ▲', w / 2, h - 28);
+        ctx.fillText('▲ 長押しで急ブレーキ！ ／ コスコスで微調整！ ▲', w / 2, h - 26);
       }
 
       g.particles.forEach((p) => {
@@ -691,6 +822,7 @@ export default function HageringGame() {
       g.dragCurrent = pos;
     } else if (g.stone.state === 'MOVING') {
       g.lastBrushPos = pos;
+      g.isBraking = true; // タッチ押下中は急ブレーキ発動
     }
   };
 
@@ -702,19 +834,21 @@ export default function HageringGame() {
     } else if (g.stone.state === 'MOVING' && g.lastBrushPos) {
       const dx = pos.x - g.lastBrushPos.x;
       const dist = Math.hypot(dx, pos.y - g.lastBrushPos.y);
-      if (dist > 6) {
-        g.stone.vy -= 0.16;
-        g.stone.vx += dx * 0.016;
+      // 指を動かしてコスコスしている間はブレーキ解除＆控えめな微調整
+      if (dist > 8) {
+        g.isBraking = false;
+        g.stone.vy -= 0.08;
+        g.stone.vx += dx * 0.0065; // 横曲げ補正を控えめに調整
         g.lastBrushPos = pos;
         playSound('brush');
         g.particles.push({
           x: g.stone.x + (Math.random() - 0.5) * 26,
           y: g.stone.y + 18,
-          vx: (Math.random() - 0.5) * 2.5,
-          vy: 2.2,
-          life: 0.75,
+          vx: (Math.random() - 0.5) * 2.2,
+          vy: 2.0,
+          life: 0.7,
           color: '#38bdf8',
-          size: 3.5,
+          size: 3,
         });
       }
     }
@@ -722,6 +856,7 @@ export default function HageringGame() {
 
   const onPointerUp = () => {
     const g = gameRef.current;
+    g.isBraking = false;
     if (g.stone.state === 'READY' && g.dragStart && g.dragCurrent) {
       const dx = g.dragStart.x - g.dragCurrent.x;
       const dy = g.dragStart.y - g.dragCurrent.y;
@@ -751,7 +886,6 @@ export default function HageringGame() {
   const currentChap = CHAPTERS[chapterIdx];
   const currentStageTitle = currentChap.stageTitles[stageNum - 1] || `${chapterIdx + 1}-${stageNum}`;
 
-  // プレイ画面（明るいポップ調Canvas）
   if (screen === 'PLAY') {
     return (
       <div style={styles.playWrapper}>
@@ -760,21 +894,26 @@ export default function HageringGame() {
             <div style={{ fontSize: '11px', color: '#b45309', fontWeight: 'bold' }}>
               {mode === 'ENDLESS' ? `∞ エンドレス WAVE ${endlessWave}` : currentStageTitle}
             </div>
-            <div style={{ fontSize: '16px', fontWeight: '900', color: '#1e293b' }}>
-              SCORE: {score.toLocaleString()}pt
+            <div style={{ fontSize: '15px', fontWeight: '900', color: '#1e293b' }}>
+              {score.toLocaleString()}pt
+            </div>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '11px', fontWeight: '900', color: targetsLeft === 0 ? '#16a34a' : '#dc2626' }}>
+              {targetsLeft === 0 ? '✅ ゴール開放!' : `🎯 残り標的: ${targetsLeft}`}
+            </div>
+            <div style={{ fontSize: '10px', fontWeight: 'bold', color: isFever ? '#d97706' : '#64748b' }}>
+              {isFever ? '🔥黄金増毛MAX!' : `増毛: ${feverGauge}%`}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#334155' }}>
-              残弾: {'🟡'.repeat(shotsLeft)}
+              {'🟡'.repeat(shotsLeft)}
             </div>
-            <div style={{ fontSize: '11px', fontWeight: 'bold', color: isFever ? '#d97706' : '#64748b' }}>
-              {isFever ? '🔥黄金増毛MAX!' : `増毛ゲージ: ${feverGauge}%`}
-            </div>
+            <button onClick={() => setScreen('TITLE')} style={styles.quitBtn}>
+              戻る
+            </button>
           </div>
-          <button onClick={() => setScreen('TITLE')} style={styles.quitBtn}>
-            戻る
-          </button>
         </div>
 
         <canvas
@@ -791,11 +930,9 @@ export default function HageringGame() {
     );
   }
 
-  // タイトル＆リザルト画面（『びんぼ～る』完全準拠の携帯ゲーム機風ベゼルUI）
   return (
     <div style={styles.pageBg}>
       <div style={styles.handheldBody}>
-        {/* 上部ステータスバー（章タイトル＋ミニアイコン） */}
         <div style={styles.topStatusRow}>
           <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#475569' }}>{currentChap.name}</span>
           <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
@@ -805,11 +942,9 @@ export default function HageringGame() {
           </div>
         </div>
 
-        {/* 内側メイン液晶カード（温かみのあるクリーム＆オレンジ枠） */}
         <div style={styles.innerScreenCard}>
           {screen === 'TITLE' && (
             <>
-              {/* タイトルヘッダー行 */}
               <div style={styles.titleHeaderRow}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '24px' }}>🏮</span>
@@ -818,7 +953,6 @@ export default function HageringGame() {
                 <span style={styles.stagePill}>{currentStageTitle}</span>
               </div>
 
-              {/* プロローグ＆ミニプレビュー物語ボックス（びんぼ～る風グラデ枠） */}
               <div style={styles.prologueBox}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
                   <HageOyajiSvg mood="normal" size={68} />
@@ -828,7 +962,6 @@ export default function HageringGame() {
                 <p style={styles.prologueText}>{currentChap.prologueText}</p>
               </div>
 
-              {/* 全5章アイコン横並びタブ */}
               <div style={styles.chapterGrid}>
                 {CHAPTERS.map((ch, idx) => {
                   const isSelected = idx === chapterIdx;
@@ -858,7 +991,6 @@ export default function HageringGame() {
                 })}
               </div>
 
-              {/* ステージ1〜5の小さな選択ドット */}
               <div style={styles.stageSelectRow}>
                 {[1, 2, 3, 4, 5].map((s) => {
                   const globalIdx = chapterIdx * 5 + s;
@@ -881,17 +1013,14 @@ export default function HageringGame() {
                 })}
               </div>
 
-              {/* メインスタートボタン（オレンジ） */}
               <button onClick={() => startStoryStage(chapterIdx, stageNum)} style={styles.startOrangeBtn}>
                 挑戦をスタートする！ →
               </button>
 
-              {/* LINEシェアボタン（グリーン） */}
               <button onClick={shareToLine} style={styles.lineGreenBtn}>
                 💬 LINEで友達にシェアする
               </button>
 
-              {/* 最高pt / 音ON / 遊び方・図鑑 ピル3つ */}
               <div style={styles.utilityRow}>
                 <div style={styles.utilPill}>🏆 最高 {bestScore.toLocaleString()}pt</div>
                 <button onClick={() => setSoundOn(!soundOn)} style={styles.utilPillBtn}>
@@ -902,12 +1031,10 @@ export default function HageringGame() {
                 </button>
               </div>
 
-              {/* エンドレスモード導線 */}
               <button onClick={startEndless} style={styles.endlessSubBtn}>
                 ∞ エンドレス無限滑走モードで遊ぶ
               </button>
 
-              {/* 管理者デバッグパネル（?key=sun777hage 時のみ表示） */}
               {isDebug && (
                 <div style={styles.debugPanel}>
                   <div style={{ fontSize: '11px', fontWeight: 'bold', color: '#be123c', marginBottom: '6px' }}>
@@ -953,7 +1080,7 @@ export default function HageringGame() {
                   marginTop: '6px',
                 }}
               >
-                {resultInfo.clear ? 'ステージ達成！お見事！' : '惜しい！ハウス届かず！'}
+                {resultInfo.clear ? 'ステージ達成！お見事！' : '惜しい！挑戦失敗！'}
               </div>
               <p style={{ fontSize: '12px', color: '#475569', margin: '6px 0 12px' }}>{resultInfo.msg}</p>
 
@@ -993,7 +1120,6 @@ export default function HageringGame() {
           )}
         </div>
 
-        {/* ゲーム機下部装飾アイコンバー */}
         <div style={styles.bottomDecoBar}>
           <ChapterIconSvg chapterId={1} size={22} />
           <ChapterIconSvg chapterId={2} size={22} />
@@ -1003,7 +1129,6 @@ export default function HageringGame() {
         </div>
       </div>
 
-      {/* 広告スペース枠（びんぼ～る同一デザイン） */}
       <div id="ad-banner-slot" style={styles.adBannerBox}>
         <div style={{ fontWeight: 'bold', fontSize: '11px', color: '#64748b' }}>
           SPONSORED LINK / 広告スペース
@@ -1013,7 +1138,6 @@ export default function HageringGame() {
         </div>
       </div>
 
-      {/* シリーズ相互リンク導線 */}
       <div style={styles.seriesNavCard}>
         <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#334155' }}>🎮 SUN ミニゲームシリーズ</span>
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -1026,7 +1150,6 @@ export default function HageringGame() {
         </div>
       </div>
 
-      {/* フッターリンク */}
       <div style={styles.footerLinks}>
         <button onClick={() => setShowGuide(true)} style={styles.footerTextBtn}>
           遊び方・図鑑
@@ -1035,7 +1158,6 @@ export default function HageringGame() {
         <span>© SUN</span>
       </div>
 
-      {/* 遊び方・キャラ図鑑モーダル */}
       {showGuide && (
         <div style={styles.modalOverlay} onClick={() => setShowGuide(false)}>
           <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>
@@ -1048,19 +1170,19 @@ export default function HageringGame() {
 
             <div style={styles.guideSection}>
               <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#1e293b', marginBottom: '4px' }}>
-                ① 引っ張って弾き飛ばせ！
+                ① 赤枠の「TARGET」を先に弾き飛ばせ！
               </div>
               <p style={{ fontSize: '12px', color: '#475569', lineHeight: '1.5' }}>
-                下の「ハゲオヤジ」を指で引っ張って離すと猛スピードで滑走！途中の邪魔者を吹っ飛ばしながら奥の赤い的（ハウス）に止めればクリアやで！
+                ステージ内の赤枠ターゲットをすべて吹っ飛ばすと奥のサークル（ゴール）が開放！反発バンパーや壁反射も使って狙い撃て！
               </p>
             </div>
 
             <div style={styles.guideSection}>
               <div style={{ fontWeight: 'bold', fontSize: '13px', color: '#1e293b', marginBottom: '4px' }}>
-                ② 滑走中にコスコス磨いて加速！
+                ② 長押し急ブレーキ＆コスコス微調整！
               </div>
               <p style={{ fontSize: '12px', color: '#475569', lineHeight: '1.5' }}>
-                滑っている最中に画面を指で左右にこすると、頭が磨かれてさらに加速＆軌道修正ができるで！
+                滑走中に画面を<strong>長押し</strong>すると踏ん張って急ブレーキ！指で軽くこすると軌道微調整もできるで！
               </p>
             </div>
 
@@ -1388,12 +1510,12 @@ const styles = {
     borderBottom: '2px solid #fcd34d',
   },
   quitBtn: {
-    padding: '6px 12px',
+    padding: '4px 10px',
     backgroundColor: '#e2e8f0',
     color: '#334155',
     border: 'none',
-    borderRadius: '8px',
-    fontSize: '12px',
+    borderRadius: '6px',
+    fontSize: '11px',
     fontWeight: 'bold',
   },
   modalOverlay: {

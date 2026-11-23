@@ -1,6 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import {
+  drawStageBackground,
+  drawHouseTarget,
+  drawObstacleVector,
+  drawHeroStone,
+  drawComicEffects,
+} from './graphics';
 
 const CHAPTERS = [
   {
@@ -264,295 +271,6 @@ export default function HageringGame() {
     setScreen('PLAY');
   };
 
-  // ベクターイラスト描画関数群
-  const drawObstacleIllustration = (ctx, obs, tick) => {
-    const bob = obs.blasted ? 0 : Math.sin(tick * 0.08 + obs.phase) * 2.5;
-    const scaleX = obs.blasted ? 1.15 : 1 + Math.sin(tick * 0.1 + obs.phase) * 0.05;
-    const scaleY = obs.blasted ? 0.85 : 1 - Math.sin(tick * 0.1 + obs.phase) * 0.05;
-
-    ctx.save();
-    ctx.translate(obs.x, obs.y + bob);
-    ctx.rotate(obs.rot);
-    ctx.scale(scaleX, scaleY);
-
-    switch (obs.kind) {
-      case 'WIG_KING': {
-        // ボス：巨大カツラ大王
-        ctx.fillStyle = '#1e1b4b';
-        ctx.beginPath();
-        ctx.arc(0, 2, 26, Math.PI, 0);
-        ctx.lineTo(28, 12);
-        ctx.quadraticCurveTo(0, 6, -28, 12);
-        ctx.closePath();
-        ctx.fill();
-        // 金の王冠
-        ctx.fillStyle = '#facc15';
-        ctx.beginPath();
-        ctx.moveTo(-14, -18);
-        ctx.lineTo(-18, -32);
-        ctx.lineTo(-6, -24);
-        ctx.lineTo(0, -36);
-        ctx.lineTo(6, -24);
-        ctx.lineTo(18, -32);
-        ctx.lineTo(14, -18);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = '#b45309';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        // 怒り目
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath();
-        ctx.arc(-8, 2, 4, 0, Math.PI * 2);
-        ctx.arc(8, 2, 4, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-      }
-      case 'DUCK': {
-        // 銭湯の黄色いアヒル
-        ctx.fillStyle = '#facc15';
-        ctx.beginPath();
-        ctx.ellipse(0, 4, 17, 13, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(6, -8, 10, 0, Math.PI * 2);
-        ctx.fill();
-        // クチバシ
-        ctx.fillStyle = '#f97316';
-        ctx.beginPath();
-        ctx.ellipse(16, -7, 6, 3.5, 0, 0, Math.PI * 2);
-        ctx.fill();
-        // 目
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath();
-        ctx.arc(9, -10, 2.2, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-      }
-      case 'BUCKET': {
-        // ケロリン桶
-        ctx.fillStyle = '#eab308';
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 19, 15, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#ca8a04';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        ctx.fillStyle = '#fef08a';
-        ctx.beginPath();
-        ctx.ellipse(0, -2, 14, 10, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#dc2626';
-        ctx.font = 'bold 8px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('ケロ', 0, 1);
-        break;
-      }
-      case 'SOAP': {
-        // 石鹸＋泡
-        ctx.fillStyle = '#f472b6';
-        ctx.beginPath();
-        ctx.roundRect(-16, -10, 32, 20, 8);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(-12, -11, 5, 0, Math.PI * 2);
-        ctx.arc(-5, -13, 4, 0, Math.PI * 2);
-        ctx.arc(12, 9, 4.5, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-      }
-      case 'BAG': {
-        // ビジネスカバン
-        ctx.fillStyle = '#78350f';
-        ctx.beginPath();
-        ctx.roundRect(-17, -11, 34, 24, 4);
-        ctx.fill();
-        ctx.strokeStyle = '#451a03';
-        ctx.lineWidth = 2.5;
-        ctx.strokeRect(-7, -17, 14, 6);
-        ctx.fillStyle = '#facc15';
-        ctx.fillRect(-3, -2, 6, 5);
-        break;
-      }
-      case 'STRAP': {
-        // つり革
-        ctx.strokeStyle = '#e2e8f0';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(0, -20);
-        ctx.lineTo(0, -8);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(0, 4, 12, 0, Math.PI * 2);
-        ctx.stroke();
-        break;
-      }
-      case 'SLEEPER': {
-        // 居眠りサラリーマン
-        ctx.fillStyle = '#fed7aa';
-        ctx.beginPath();
-        ctx.arc(0, 0, 17, 0, Math.PI * 2);
-        ctx.fill();
-        // 眼鏡
-        ctx.strokeStyle = '#1e293b';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(-11, -4, 9, 6);
-        ctx.strokeRect(2, -4, 9, 6);
-        // 鼻ちょうちんアニメ
-        const bubbleR = 4 + Math.sin(tick * 0.15) * 2.5;
-        ctx.fillStyle = 'rgba(186, 230, 253, 0.85)';
-        ctx.beginPath();
-        ctx.arc(6, 7, bubbleR, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-      }
-      case 'BILL': {
-        // 赤い督促状
-        ctx.fillStyle = '#fef2f2';
-        ctx.fillRect(-14, -18, 28, 36);
-        ctx.strokeStyle = '#dc2626';
-        ctx.lineWidth = 2.5;
-        ctx.strokeRect(-14, -18, 28, 36);
-        ctx.fillStyle = '#dc2626';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('督促', 0, 3);
-        break;
-      }
-      case 'DOCS': {
-        // 書類の山
-        [-6, 0, 6].forEach((offset, idx) => {
-          ctx.fillStyle = idx % 2 === 0 ? '#f8fafc' : '#cbd5e1';
-          ctx.fillRect(-15 + idx * 2, offset - 8, 28, 12);
-          ctx.strokeStyle = '#475569';
-          ctx.lineWidth = 1.5;
-          ctx.strokeRect(-15 + idx * 2, offset - 8, 28, 12);
-        });
-        break;
-      }
-      case 'BOSS_MAN': {
-        // 真っ赤な顔の怒り上司（湯気アニメ付き）
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath();
-        ctx.arc(0, 2, 18, 0, Math.PI * 2);
-        ctx.fill();
-        // バーコード髪
-        ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 1.8;
-        ctx.beginPath();
-        ctx.moveTo(-8, -14);
-        ctx.lineTo(8, -14);
-        ctx.moveTo(-6, -11);
-        ctx.lineTo(6, -11);
-        ctx.stroke();
-        // 怒り眉＆口
-        ctx.beginPath();
-        ctx.moveTo(-10, -4);
-        ctx.lineTo(-2, 0);
-        ctx.moveTo(10, -4);
-        ctx.lineTo(2, 0);
-        ctx.stroke();
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(-7, 6, 14, 5);
-        // 頭の湯気
-        const steamY = -22 - ((tick % 20) * 0.5);
-        ctx.fillStyle = 'rgba(255,255,255,0.75)';
-        ctx.beginPath();
-        ctx.arc(-8, steamY, 3.5, 0, Math.PI * 2);
-        ctx.arc(8, steamY - 3, 3.5, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-      }
-      case 'CHAMPAGNE': {
-        // シャンパンボトル
-        ctx.fillStyle = '#15803d';
-        ctx.beginPath();
-        ctx.roundRect(-8, -4, 16, 22, 4);
-        ctx.fill();
-        ctx.fillRect(-4, -18, 8, 15);
-        ctx.fillStyle = '#facc15';
-        ctx.fillRect(-4, -20, 8, 5);
-        ctx.fillRect(-6, 3, 12, 7);
-        break;
-      }
-      case 'MONEY': {
-        // 一万円札束
-        ctx.fillStyle = '#dcfce7';
-        ctx.fillRect(-17, -11, 34, 22);
-        ctx.strokeStyle = '#16a34a';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(-17, -11, 34, 22);
-        ctx.fillStyle = '#facc15';
-        ctx.fillRect(-4, -11, 8, 22);
-        ctx.fillStyle = '#15803d';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('¥', 0, 4);
-        break;
-      }
-      case 'HOST': {
-        // グラサン黒服
-        ctx.fillStyle = '#fde68a';
-        ctx.beginPath();
-        ctx.arc(0, 0, 17, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(-13, -5, 11, 6);
-        ctx.fillRect(2, -5, 11, 6);
-        ctx.fillRect(-2, -3, 4, 2);
-        break;
-      }
-      case 'METEOR': {
-        // 燃える隕石
-        ctx.fillStyle = '#78350f';
-        ctx.beginPath();
-        ctx.arc(0, 0, 18, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#451a03';
-        ctx.beginPath();
-        ctx.arc(-6, -5, 4, 0, Math.PI * 2);
-        ctx.arc(7, 4, 5, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-      }
-      case 'SATELLITE': {
-        // 人工衛星
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillRect(-22, -6, 14, 12);
-        ctx.fillRect(8, -6, 14, 12);
-        ctx.fillStyle = '#facc15';
-        ctx.beginPath();
-        ctx.arc(0, 0, 8, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-      }
-      case 'UFO':
-      default: {
-        // 円盤UFO
-        ctx.fillStyle = '#a855f7';
-        ctx.beginPath();
-        ctx.ellipse(0, 3, 21, 8, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#67e8f9';
-        ctx.beginPath();
-        ctx.arc(0, -2, 10, Math.PI, 0);
-        ctx.fill();
-        break;
-      }
-    }
-
-    // 吹っ飛び中は目に星マーク
-    if (obs.blasted) {
-      ctx.fillStyle = '#facc15';
-      ctx.font = 'bold 14px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('★ ★', 0, -18);
-    }
-
-    ctx.restore();
-  };
-
   useEffect(() => {
     if (screen !== 'PLAY') return;
 
@@ -642,7 +360,6 @@ export default function HageringGame() {
       const st = g.stone;
 
       if (st.state === 'MOVING') {
-        // 残像トレイル記録
         st.trail.push({ x: st.x, y: st.y, alpha: 0.65 });
         if (st.trail.length > 10) st.trail.shift();
         st.trail.forEach((t) => (t.alpha *= 0.86));
@@ -653,7 +370,6 @@ export default function HageringGame() {
         st.vy *= chap.friction;
         st.angle += Math.hypot(st.vx, st.vy) * 0.045;
 
-        // 壁バウンド
         if (st.x - st.r < 14) {
           st.x = 14 + st.r;
           st.vx = Math.abs(st.vx) * 0.85;
@@ -668,7 +384,6 @@ export default function HageringGame() {
           st.vy = Math.abs(st.vy) * 0.75;
         }
 
-        // 障害物ヒット判定
         g.obstacles.forEach((obs) => {
           if (obs.blasted) return;
           const dx = obs.x - st.x;
@@ -839,66 +554,29 @@ export default function HageringGame() {
         ctx.translate((Math.random() - 0.5) * g.shake, (Math.random() - 0.5) * g.shake);
       }
 
-      // 背景＆レーン床
-      ctx.fillStyle = chap.bg;
-      ctx.fillRect(0, 0, w, h);
+      // 1. 背景＆章演出（graphics.js）
+      drawStageBackground(ctx, chap, w, h, g.tick);
 
-      ctx.fillStyle = chap.floor;
-      ctx.fillRect(14, 55, w - 28, h - 70);
+      // 2. 的（ハウス）（graphics.js）
+      drawHouseTarget(ctx, g.house, g.tick);
 
-      // アニメーションするレーンタイル模様
-      ctx.strokeStyle = chap.tile;
-      ctx.lineWidth = 1.5;
-      ctx.globalAlpha = 0.25;
-      const gridStep = 45;
-      for (let gx = 14; gx < w - 14; gx += gridStep) {
-        ctx.beginPath();
-        ctx.moveTo(gx, 55);
-        ctx.lineTo(gx, h - 15);
-        ctx.stroke();
-      }
-      for (let gy = 55; gy < h - 15; gy += gridStep) {
-        ctx.beginPath();
-        ctx.moveTo(14, gy);
-        ctx.lineTo(w - 14, gy);
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1.0;
-
-      // 的（ハウス）脈動アニメーション
-      const hx = g.house.x;
-      const hy = g.house.y;
-      const pulse = Math.sin(g.tick * 0.08) * 3;
-      const hr = g.house.r + pulse;
-      const rings = [
-        { r: hr, color: '#ef4444' },
-        { r: hr * 0.68, color: '#ffffff' },
-        { r: hr * 0.36, color: '#3b82f6' },
-        { r: hr * 0.14, color: '#facc15' },
-      ];
-      rings.forEach((rg) => {
-        ctx.beginPath();
-        ctx.arc(hx, hy, Math.max(4, rg.r), 0, Math.PI * 2);
-        ctx.fillStyle = rg.color;
-        ctx.fill();
-      });
-
-      // 障害物イラスト描画
+      // 3. 障害物ベクターイラスト（graphics.js）
       g.obstacles.forEach((obs) => {
         if (obs.x < -80 || obs.x > w + 80 || obs.y < -80 || obs.y > h + 80) return;
-        drawObstacleIllustration(ctx, obs, g.tick);
+        drawObstacleVector(ctx, obs, g.tick);
       });
 
-      // スリングショットゴム＆照準アニメ
+      // 4. スリングショットゴム＆発射予測矢印
       const st = g.stone;
       const isPulling = st.state === 'READY' && g.dragStart && g.dragCurrent;
+      let pullDx = 0;
+      let pullDy = 0;
       if (isPulling) {
-        const dx = g.dragStart.x - g.dragCurrent.x;
-        const dy = g.dragStart.y - g.dragCurrent.y;
-        const pullX = st.x - dx * 0.45;
-        const pullY = st.y - dy * 0.45;
+        pullDx = g.dragStart.x - g.dragCurrent.x;
+        pullDy = g.dragStart.y - g.dragCurrent.y;
+        const pullX = st.x - pullDx * 0.45;
+        const pullY = st.y - pullDy * 0.45;
 
-        // 発射予測矢印
         ctx.save();
         ctx.strokeStyle = '#fde047';
         ctx.lineWidth = 4;
@@ -906,11 +584,10 @@ export default function HageringGame() {
         ctx.lineDashOffset = -g.tick * 1.5;
         ctx.beginPath();
         ctx.moveTo(st.x, st.y);
-        ctx.lineTo(st.x + dx * 2.0, st.y + dy * 2.0);
+        ctx.lineTo(st.x + pullDx * 2.0, st.y + pullDy * 2.0);
         ctx.stroke();
         ctx.restore();
 
-        // ゴムバンド描画
         ctx.strokeStyle = '#f43f5e';
         ctx.lineWidth = 5;
         ctx.beginPath();
@@ -920,110 +597,10 @@ export default function HageringGame() {
         ctx.stroke();
       }
 
-      // 主役の残像トレイル描画
-      st.trail.forEach((tr) => {
-        ctx.save();
-        ctx.globalAlpha = tr.alpha * 0.5;
-        ctx.fillStyle = g.isFever ? '#facc15' : '#fdba74';
-        ctx.beginPath();
-        ctx.arc(tr.x, tr.y, st.r * 0.85, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      });
+      // 5. 主役おやじ頭（graphics.js）
+      drawHeroStone(ctx, st, isPulling, pullDx, pullDy, g.isFever, g.tick);
 
-      // 主役ストーン（表情アニメ付きおやじ頭）
-      ctx.save();
-      const drawX = isPulling ? st.x - (g.dragStart.x - g.dragCurrent.x) * 0.35 : st.x;
-      const drawY = isPulling ? st.y - (g.dragStart.y - g.dragCurrent.y) * 0.35 : st.y;
-      ctx.translate(drawX, drawY);
-      ctx.rotate(st.angle);
-
-      // 黄金増毛フィーバーのスーパーオーラ＆稲妻
-      if (g.isFever) {
-        const auraR = st.r + 11 + Math.sin(g.tick * 0.35) * 4;
-        ctx.beginPath();
-        ctx.arc(0, 0, auraR, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(250, 204, 21, 0.5)';
-        ctx.fill();
-
-        // 黄金の逆立ち髪エフェクト
-        ctx.fillStyle = '#facc15';
-        for (let i = -2; i <= 2; i++) {
-          ctx.beginPath();
-          ctx.moveTo(i * 6 - 4, -st.r + 4);
-          ctx.lineTo(i * 8, -st.r - 12 - Math.sin(g.tick * 0.4 + i) * 3);
-          ctx.lineTo(i * 6 + 4, -st.r + 4);
-          ctx.fill();
-        }
-      }
-
-      // 頭本体グラデーション
-      const grad = ctx.createRadialGradient(-6, -8, 3, 0, 0, st.r);
-      grad.addColorStop(0, g.isFever ? '#fef08a' : '#ffedd5');
-      grad.addColorStop(0.6, g.isFever ? '#eab308' : '#fdba74');
-      grad.addColorStop(1, g.isFever ? '#ca8a04' : '#ea580c');
-
-      ctx.beginPath();
-      ctx.arc(0, 0, st.r, 0, Math.PI * 2);
-      ctx.fillStyle = grad;
-      ctx.fill();
-      ctx.lineWidth = 2.5;
-      ctx.strokeStyle = '#7c2d12';
-      ctx.stroke();
-
-      // 側頭部のサザエさん風3本毛
-      ctx.strokeStyle = '#1f2937';
-      ctx.lineWidth = 2.2;
-      [-1, 1].forEach((side) => {
-        ctx.beginPath();
-        ctx.moveTo(side * (st.r - 2), -4);
-        ctx.lineTo(side * (st.r + 6), -7);
-        ctx.moveTo(side * (st.r - 1), 0);
-        ctx.lineTo(side * (st.r + 7), 0);
-        ctx.moveTo(side * (st.r - 2), 4);
-        ctx.lineTo(side * (st.r + 6), 7);
-        ctx.stroke();
-      });
-
-      // キラーン！ハイライト
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.ellipse(-7, -9, 7.5, 3.8, -0.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 状態別の表情アニメーション
-      ctx.strokeStyle = '#1f2937';
-      ctx.lineWidth = 2.4;
-      if (isPulling) {
-        // 引っ張り中：＞＜ 顔＆歯食いしばり
-        ctx.beginPath();
-        ctx.moveTo(-10, 1);
-        ctx.lineTo(-4, 5);
-        ctx.lineTo(-10, 9);
-        ctx.moveTo(10, 1);
-        ctx.lineTo(4, 5);
-        ctx.lineTo(10, 9);
-        ctx.stroke();
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(-6, 11, 12, 4);
-        ctx.strokeRect(-6, 11, 12, 4);
-      } else {
-        // 通常・滑走中：キリッとした気合い顔
-        ctx.beginPath();
-        ctx.moveTo(-10, 1);
-        ctx.lineTo(-3, 5);
-        ctx.moveTo(10, 1);
-        ctx.lineTo(3, 5);
-        ctx.stroke();
-        ctx.fillStyle = '#1f2937';
-        ctx.beginPath();
-        ctx.arc(-6, 7, 2.3, 0, Math.PI * 2);
-        ctx.arc(6, 7, 2.3, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-
-      // 滑走中のブラッシングガイド
+      // 6. 滑走中のブラッシングガイド
       if (st.state === 'MOVING') {
         ctx.fillStyle = 'rgba(255,255,255,0.85)';
         ctx.font = 'bold 12px sans-serif';
@@ -1031,26 +608,7 @@ export default function HageringGame() {
         ctx.fillText('▲ 画面をコスコスこすって加速＆軌道修正！ ▲', w / 2, h - 28);
       }
 
-      // マンガ風集中線エフェクト（ヒット時）
-      if (g.speedLinesTimer > 0) {
-        ctx.save();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.38)';
-        ctx.lineWidth = 2;
-        const cx = w / 2;
-        const cy = h / 2;
-        for (let i = 0; i < 24; i++) {
-          const ang = (i / 24) * Math.PI * 2 + g.tick * 0.1;
-          const r1 = 120 + Math.random() * 40;
-          const r2 = Math.max(w, h);
-          ctx.beginPath();
-          ctx.moveTo(cx + Math.cos(ang) * r1, cy + Math.sin(ang) * r1);
-          ctx.lineTo(cx + Math.cos(ang) * r2, cy + Math.sin(ang) * r2);
-          ctx.stroke();
-        }
-        ctx.restore();
-      }
-
-      // パーティクル描画
+      // 7. パーティクル＆紙吹雪
       g.particles.forEach((p) => {
         ctx.globalAlpha = Math.max(0, p.life);
         ctx.fillStyle = p.color;
@@ -1060,7 +618,6 @@ export default function HageringGame() {
       });
       ctx.globalAlpha = 1.0;
 
-      // クリア紙吹雪描画
       g.confetti.forEach((c) => {
         ctx.save();
         ctx.globalAlpha = Math.min(1, c.life);
@@ -1071,45 +628,8 @@ export default function HageringGame() {
         ctx.restore();
       });
 
-      // アメコミ・マンガ風ヒット吹き出しエフェクト
-      g.comicEffects.forEach((ce) => {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, ce.life);
-        ctx.translate(ce.x, ce.y);
-        ctx.scale(ce.scale, ce.scale);
-
-        // ギザギザ爆発背景
-        ctx.fillStyle = '#dc2626';
-        ctx.beginPath();
-        const spikes = 12;
-        for (let i = 0; i < spikes * 2; i++) {
-          const rad = i % 2 === 0 ? 48 : 28;
-          const a = (i / (spikes * 2)) * Math.PI * 2;
-          if (i === 0) ctx.moveTo(Math.cos(a) * rad, Math.sin(a) * rad * 0.6);
-          else ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad * 0.6);
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-
-        // 擬音テキスト
-        ctx.font = '900 18px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 4;
-        ctx.strokeText(ce.text, 0, -2);
-        ctx.fillStyle = ce.color;
-        ctx.fillText(ce.text, 0, -2);
-
-        // スコアテキスト
-        ctx.font = 'bold 12px sans-serif';
-        ctx.strokeText(ce.subText, 0, 15);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(ce.subText, 0, 15);
-        ctx.restore();
-      });
+      // 8. マンガ風集中線＆擬音吹き出し（graphics.js）
+      drawComicEffects(ctx, g.speedLinesTimer, g.comicEffects, w, h, g.tick);
 
       ctx.restore();
     };
@@ -1252,7 +772,31 @@ export default function HageringGame() {
               <h1 style={styles.titleLogo}>ハゲリング</h1>
               <p style={styles.subCopy}>〜磨け！滑れ！邪魔者を吹っ飛ばせ！〜</p>
 
-              <div style={styles.heroIcon}>👴✨🥌</div>
+              {/* 独自SVGベクターキャラエンブレム */}
+              <svg width="110" height="84" viewBox="0 0 110 84" style={{ margin: '4px 0 8px' }}>
+                <defs>
+                  <radialGradient id="headGrad" cx="35%" cy="30%" r="65%">
+                    <stop offset="0%" stopColor="#ffedd5" />
+                    <stop offset="60%" stopColor="#fdba74" />
+                    <stop offset="100%" stopColor="#ea580c" />
+                  </radialGradient>
+                </defs>
+                {/* 黄金オーラ */}
+                <circle cx="55" cy="44" r="36" fill="rgba(250, 204, 21, 0.22)" />
+                {/* 側頭部3本毛 */}
+                <path d="M23 40 L12 35 M22 45 L11 45 M23 50 L12 55" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" />
+                <path d="M87 40 L98 35 M88 45 L99 45 M87 50 L98 55" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" />
+                {/* 頭本体 */}
+                <circle cx="55" cy="45" r="31" fill="url(#headGrad)" stroke="#7c2d12" strokeWidth="2.5" />
+                {/* ピカッと光るハイライト */}
+                <ellipse cx="44" cy="31" rx="11" ry="5" transform="rotate(-25 44 31)" fill="#ffffff" opacity="0.9" />
+                <path d="M72 16 L75 23 L82 26 L75 29 L72 36 L69 29 L62 26 L69 23 Z" fill="#facc15" />
+                {/* 気合い顔 */}
+                <path d="M40 46 L50 51 M70 46 L60 51" stroke="#1e293b" strokeWidth="3" strokeLinecap="round" />
+                <circle cx="46" cy="55" r="3" fill="#1e293b" />
+                <circle cx="64" cy="55" r="3" fill="#1e293b" />
+                <path d="M48 63 Q55 69 62 63" stroke="#1e293b" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+              </svg>
 
               <div style={{ fontSize: '12px', color: '#fde047', marginBottom: '12px' }}>
                 HIGH SCORE: {bestScore.toLocaleString()}
@@ -1449,11 +993,7 @@ const styles = {
   subCopy: {
     fontSize: '12px',
     color: '#cbd5e1',
-    marginBottom: '12px',
-  },
-  heroIcon: {
-    fontSize: '42px',
-    margin: '6px 0 12px',
+    marginBottom: '6px',
   },
   primaryBtn: {
     width: '100%',

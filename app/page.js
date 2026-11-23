@@ -6,56 +6,58 @@ const CHAPTERS = [
   {
     id: 1,
     name: '第1章：銭湯の洗い場',
-    bg: '#1e3a5f',
-    floor: '#2b547e',
-    line: '#60a5fa',
-    obstacles: ['桶', 'アヒル', '石鹸'],
+    bg: '#172554',
+    floor: '#1e40af',
+    tile: '#3b82f6',
+    obstacles: ['DUCK', 'BUCKET', 'SOAP'],
     friction: 0.985,
   },
   {
     id: 2,
     name: '第2章：朝の満員電車',
-    bg: '#334155',
-    floor: '#475569',
-    line: '#94a3b8',
-    obstacles: ['カバン', 'つり革', '居眠り客'],
+    bg: '#1e293b',
+    floor: '#334155',
+    tile: '#64748b',
+    obstacles: ['BAG', 'STRAP', 'SLEEPER'],
     friction: 0.982,
   },
   {
     id: 3,
     name: '第3章：ブラック企業の廊下',
-    bg: '#3f2e3e',
-    floor: '#5c3d58',
-    line: '#f472b6',
-    obstacles: ['督促状', '書類の山', '怒り上司'],
+    bg: '#3b0764',
+    floor: '#581c87',
+    tile: '#a855f7',
+    obstacles: ['BILL', 'DOCS', 'BOSS_MAN'],
     friction: 0.980,
   },
   {
     id: 4,
     name: '第4章：銀座の高級クラブ',
-    bg: '#422006',
-    floor: '#713f12',
-    line: '#facc15',
-    obstacles: ['シャンパン', '札束', '黒服'],
+    bg: '#451a03',
+    floor: '#78350f',
+    tile: '#f59e0b',
+    obstacles: ['CHAMPAGNE', 'MONEY', 'HOST'],
     friction: 0.988,
   },
   {
     id: 5,
     name: '第5章：宇宙ステーション',
-    bg: '#090d16',
-    floor: '#1e1b4b',
-    line: '#a855f7',
-    obstacles: ['隕石', '人工衛星', 'UFO'],
+    bg: '#020617',
+    floor: '#0f172a',
+    tile: '#38bdf8',
+    obstacles: ['METEOR', 'SATELLITE', 'UFO'],
     friction: 0.994,
   },
 ];
+
+const ONOMATOPOEIA = ['バチコーン!!', 'スカッ!!', 'ズシャア!!', 'ドゴォォン!!', 'ツルピカッ!!'];
 
 export default function HageringGame() {
   const [screen, setScreen] = useState('TITLE'); // TITLE, STAGE_SELECT, PLAY, RESULT
   const [mode, setMode] = useState('STORY'); // STORY, ENDLESS
   const [chapterIdx, setChapterIdx] = useState(0);
-  const [stageNum, setStageNum] = useState(1); // 1..5
-  const [unlockedStage, setUnlockedStage] = useState(1); // 1..25
+  const [stageNum, setStageNum] = useState(1);
+  const [unlockedStage, setUnlockedStage] = useState(1);
   const [isDebug, setIsDebug] = useState(false);
 
   const [score, setScore] = useState(0);
@@ -70,15 +72,17 @@ export default function HageringGame() {
   const canvasRef = useRef(null);
   const audioCtxRef = useRef(null);
 
-  // ゲーム物理状態（Canvasループ内で直接参照）
   const gameRef = useRef({
     width: 360,
     height: 640,
-    stone: { x: 180, y: 520, vx: 0, vy: 0, r: 22, state: 'READY', angle: 0 },
+    tick: 0,
+    stone: { x: 180, y: 520, vx: 0, vy: 0, r: 23, state: 'READY', angle: 0, trail: [] },
     house: { x: 180, y: 130, r: 65 },
     obstacles: [],
     particles: [],
-    floatingTexts: [],
+    confetti: [],
+    comicEffects: [],
+    speedLinesTimer: 0,
     dragStart: null,
     dragCurrent: null,
     lastBrushPos: null,
@@ -89,15 +93,12 @@ export default function HageringGame() {
     isFever: false,
     score: 0,
     shotsLeft: 3,
-    stageCleared: false,
-    stageFailed: false,
     chapterIdx: 0,
     stageNum: 1,
     mode: 'STORY',
     endlessWave: 1,
   });
 
-  // 初期化（デバッグキー・セーブデータ読込）
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -113,7 +114,6 @@ export default function HageringGame() {
     }
   }, []);
 
-  // Web Audio API 効果音ジェネレーター
   const playSound = (type) => {
     try {
       if (!audioCtxRef.current) {
@@ -131,20 +131,20 @@ export default function HageringGame() {
       const now = ctx.currentTime;
       if (type === 'shoot') {
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.exponentialRampToValueAtTime(520, now + 0.18);
+        osc.frequency.setValueAtTime(190, now);
+        osc.frequency.exponentialRampToValueAtTime(580, now + 0.18);
         gain.gain.setValueAtTime(0.25, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
         osc.start(now);
         osc.stop(now + 0.2);
       } else if (type === 'hit') {
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(320 + Math.random() * 150, now);
-        osc.frequency.exponentialRampToValueAtTime(90, now + 0.14);
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.frequency.setValueAtTime(360 + Math.random() * 140, now);
+        osc.frequency.exponentialRampToValueAtTime(85, now + 0.15);
+        gain.gain.setValueAtTime(0.32, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.16);
         osc.start(now);
-        osc.stop(now + 0.15);
+        osc.stop(now + 0.16);
       } else if (type === 'fever') {
         osc.type = 'square';
         osc.frequency.setValueAtTime(440, now);
@@ -156,7 +156,7 @@ export default function HageringGame() {
         osc.stop(now + 0.35);
       } else if (type === 'brush') {
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(700 + Math.random() * 300, now);
+        osc.frequency.setValueAtTime(750 + Math.random() * 350, now);
         gain.gain.setValueAtTime(0.06, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
         osc.start(now);
@@ -171,12 +171,9 @@ export default function HageringGame() {
         osc.start(now);
         osc.stop(now + 0.45);
       }
-    } catch (e) {
-      // 音声再生エラーは無視
-    }
+    } catch (e) {}
   };
 
-  // ステージ初期化
   const setupStage = (cIdx, sNum, gameMode = 'STORY', wave = 1) => {
     const g = gameRef.current;
     const w = window.innerWidth > 480 ? 420 : window.innerWidth;
@@ -188,7 +185,7 @@ export default function HageringGame() {
     g.mode = gameMode;
     g.endlessWave = wave;
 
-    g.stone = { x: w / 2, y: h - 110, vx: 0, vy: 0, r: 22, state: 'READY', angle: 0 };
+    g.stone = { x: w / 2, y: h - 110, vx: 0, vy: 0, r: 23, state: 'READY', angle: 0, trail: [] };
     g.house = {
       x: w / 2 + (gameMode === 'ENDLESS' ? (Math.random() - 0.5) * 100 : (sNum % 2 === 0 ? 45 : sNum === 3 ? -45 : 0)),
       y: 135,
@@ -200,34 +197,35 @@ export default function HageringGame() {
     const count = gameMode === 'ENDLESS' ? Math.min(18, 5 + wave * 2) : 4 + cIdx * 2 + sNum;
 
     for (let i = 0; i < count; i++) {
-      const label = chap.obstacles[i % chap.obstacles.length];
-      const ox = 45 + Math.random() * (w - 90);
-      const oy = 210 + Math.random() * (h - 370);
-      const isBoss = (i === 0 && (sNum === 5 || wave % 3 === 0));
+      const kind = chap.obstacles[i % chap.obstacles.length];
+      const ox = 48 + Math.random() * (w - 96);
+      const oy = 215 + Math.random() * (h - 375);
+      const isBoss = i === 0 && (sNum === 5 || wave % 3 === 0);
       obsList.push({
         id: i,
         x: ox,
         y: oy,
         vx: 0,
         vy: 0,
-        r: isBoss ? 26 : 18,
-        label: isBoss ? 'カツラ大王' : label,
+        r: isBoss ? 28 : 20,
+        kind: isBoss ? 'WIG_KING' : kind,
         isBoss,
         blasted: false,
         rot: 0,
         vrot: 0,
+        phase: Math.random() * Math.PI * 2,
       });
     }
 
     g.obstacles = obsList;
     g.particles = [];
-    g.floatingTexts = [];
+    g.confetti = [];
+    g.comicEffects = [];
+    g.speedLinesTimer = 0;
     g.dragStart = null;
     g.dragCurrent = null;
     g.shake = 0;
     g.hitStop = 0;
-    g.stageCleared = false;
-    g.stageFailed = false;
 
     if (gameMode === 'STORY' || wave === 1) {
       g.shotsLeft = 3;
@@ -266,7 +264,295 @@ export default function HageringGame() {
     setScreen('PLAY');
   };
 
-  // メインゲームループ
+  // ベクターイラスト描画関数群
+  const drawObstacleIllustration = (ctx, obs, tick) => {
+    const bob = obs.blasted ? 0 : Math.sin(tick * 0.08 + obs.phase) * 2.5;
+    const scaleX = obs.blasted ? 1.15 : 1 + Math.sin(tick * 0.1 + obs.phase) * 0.05;
+    const scaleY = obs.blasted ? 0.85 : 1 - Math.sin(tick * 0.1 + obs.phase) * 0.05;
+
+    ctx.save();
+    ctx.translate(obs.x, obs.y + bob);
+    ctx.rotate(obs.rot);
+    ctx.scale(scaleX, scaleY);
+
+    switch (obs.kind) {
+      case 'WIG_KING': {
+        // ボス：巨大カツラ大王
+        ctx.fillStyle = '#1e1b4b';
+        ctx.beginPath();
+        ctx.arc(0, 2, 26, Math.PI, 0);
+        ctx.lineTo(28, 12);
+        ctx.quadraticCurveTo(0, 6, -28, 12);
+        ctx.closePath();
+        ctx.fill();
+        // 金の王冠
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.moveTo(-14, -18);
+        ctx.lineTo(-18, -32);
+        ctx.lineTo(-6, -24);
+        ctx.lineTo(0, -36);
+        ctx.lineTo(6, -24);
+        ctx.lineTo(18, -32);
+        ctx.lineTo(14, -18);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#b45309';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        // 怒り目
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(-8, 2, 4, 0, Math.PI * 2);
+        ctx.arc(8, 2, 4, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'DUCK': {
+        // 銭湯の黄色いアヒル
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.ellipse(0, 4, 17, 13, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(6, -8, 10, 0, Math.PI * 2);
+        ctx.fill();
+        // クチバシ
+        ctx.fillStyle = '#f97316';
+        ctx.beginPath();
+        ctx.ellipse(16, -7, 6, 3.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // 目
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(9, -10, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'BUCKET': {
+        // ケロリン桶
+        ctx.fillStyle = '#eab308';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 19, 15, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ca8a04';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.ellipse(0, -2, 14, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#dc2626';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ケロ', 0, 1);
+        break;
+      }
+      case 'SOAP': {
+        // 石鹸＋泡
+        ctx.fillStyle = '#f472b6';
+        ctx.beginPath();
+        ctx.roundRect(-16, -10, 32, 20, 8);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(-12, -11, 5, 0, Math.PI * 2);
+        ctx.arc(-5, -13, 4, 0, Math.PI * 2);
+        ctx.arc(12, 9, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'BAG': {
+        // ビジネスカバン
+        ctx.fillStyle = '#78350f';
+        ctx.beginPath();
+        ctx.roundRect(-17, -11, 34, 24, 4);
+        ctx.fill();
+        ctx.strokeStyle = '#451a03';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(-7, -17, 14, 6);
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(-3, -2, 6, 5);
+        break;
+      }
+      case 'STRAP': {
+        // つり革
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(0, -20);
+        ctx.lineTo(0, -8);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 4, 12, 0, Math.PI * 2);
+        ctx.stroke();
+        break;
+      }
+      case 'SLEEPER': {
+        // 居眠りサラリーマン
+        ctx.fillStyle = '#fed7aa';
+        ctx.beginPath();
+        ctx.arc(0, 0, 17, 0, Math.PI * 2);
+        ctx.fill();
+        // 眼鏡
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-11, -4, 9, 6);
+        ctx.strokeRect(2, -4, 9, 6);
+        // 鼻ちょうちんアニメ
+        const bubbleR = 4 + Math.sin(tick * 0.15) * 2.5;
+        ctx.fillStyle = 'rgba(186, 230, 253, 0.85)';
+        ctx.beginPath();
+        ctx.arc(6, 7, bubbleR, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'BILL': {
+        // 赤い督促状
+        ctx.fillStyle = '#fef2f2';
+        ctx.fillRect(-14, -18, 28, 36);
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(-14, -18, 28, 36);
+        ctx.fillStyle = '#dc2626';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('督促', 0, 3);
+        break;
+      }
+      case 'DOCS': {
+        // 書類の山
+        [-6, 0, 6].forEach((offset, idx) => {
+          ctx.fillStyle = idx % 2 === 0 ? '#f8fafc' : '#cbd5e1';
+          ctx.fillRect(-15 + idx * 2, offset - 8, 28, 12);
+          ctx.strokeStyle = '#475569';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(-15 + idx * 2, offset - 8, 28, 12);
+        });
+        break;
+      }
+      case 'BOSS_MAN': {
+        // 真っ赤な顔の怒り上司（湯気アニメ付き）
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(0, 2, 18, 0, Math.PI * 2);
+        ctx.fill();
+        // バーコード髪
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(-8, -14);
+        ctx.lineTo(8, -14);
+        ctx.moveTo(-6, -11);
+        ctx.lineTo(6, -11);
+        ctx.stroke();
+        // 怒り眉＆口
+        ctx.beginPath();
+        ctx.moveTo(-10, -4);
+        ctx.lineTo(-2, 0);
+        ctx.moveTo(10, -4);
+        ctx.lineTo(2, 0);
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-7, 6, 14, 5);
+        // 頭の湯気
+        const steamY = -22 - ((tick % 20) * 0.5);
+        ctx.fillStyle = 'rgba(255,255,255,0.75)';
+        ctx.beginPath();
+        ctx.arc(-8, steamY, 3.5, 0, Math.PI * 2);
+        ctx.arc(8, steamY - 3, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'CHAMPAGNE': {
+        // シャンパンボトル
+        ctx.fillStyle = '#15803d';
+        ctx.beginPath();
+        ctx.roundRect(-8, -4, 16, 22, 4);
+        ctx.fill();
+        ctx.fillRect(-4, -18, 8, 15);
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(-4, -20, 8, 5);
+        ctx.fillRect(-6, 3, 12, 7);
+        break;
+      }
+      case 'MONEY': {
+        // 一万円札束
+        ctx.fillStyle = '#dcfce7';
+        ctx.fillRect(-17, -11, 34, 22);
+        ctx.strokeStyle = '#16a34a';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-17, -11, 34, 22);
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(-4, -11, 8, 22);
+        ctx.fillStyle = '#15803d';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('¥', 0, 4);
+        break;
+      }
+      case 'HOST': {
+        // グラサン黒服
+        ctx.fillStyle = '#fde68a';
+        ctx.beginPath();
+        ctx.arc(0, 0, 17, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-13, -5, 11, 6);
+        ctx.fillRect(2, -5, 11, 6);
+        ctx.fillRect(-2, -3, 4, 2);
+        break;
+      }
+      case 'METEOR': {
+        // 燃える隕石
+        ctx.fillStyle = '#78350f';
+        ctx.beginPath();
+        ctx.arc(0, 0, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#451a03';
+        ctx.beginPath();
+        ctx.arc(-6, -5, 4, 0, Math.PI * 2);
+        ctx.arc(7, 4, 5, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'SATELLITE': {
+        // 人工衛星
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(-22, -6, 14, 12);
+        ctx.fillRect(8, -6, 14, 12);
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.arc(0, 0, 8, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      }
+      case 'UFO':
+      default: {
+        // 円盤UFO
+        ctx.fillStyle = '#a855f7';
+        ctx.beginPath();
+        ctx.ellipse(0, 3, 21, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#67e8f9';
+        ctx.beginPath();
+        ctx.arc(0, -2, 10, Math.PI, 0);
+        ctx.fill();
+        break;
+      }
+    }
+
+    // 吹っ飛び中は目に星マーク
+    if (obs.blasted) {
+      ctx.fillStyle = '#facc15';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('★ ★', 0, -18);
+    }
+
+    ctx.restore();
+  };
+
   useEffect(() => {
     if (screen !== 'PLAY') return;
 
@@ -286,11 +572,11 @@ export default function HageringGame() {
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    const spawnParticles = (x, y, color, count = 14) => {
+    const spawnParticles = (x, y, color, count = 16) => {
       const g = gameRef.current;
       for (let i = 0; i < count; i++) {
         const ang = Math.random() * Math.PI * 2;
-        const spd = 2 + Math.random() * 7;
+        const spd = 2.5 + Math.random() * 8;
         g.particles.push({
           x,
           y,
@@ -298,17 +584,45 @@ export default function HageringGame() {
           vy: Math.sin(ang) * spd,
           life: 1.0,
           color,
-          size: 3 + Math.random() * 5,
+          size: 3.5 + Math.random() * 5.5,
         });
       }
     };
 
-    const addFloatingText = (x, y, text, color = '#fde047') => {
-      gameRef.current.floatingTexts.push({ x, y, text, color, life: 1.0 });
+    const spawnConfetti = (x, y, count = 45) => {
+      const g = gameRef.current;
+      const colors = ['#facc15', '#f43f5e', '#38bdf8', '#4ade80', '#a855f7'];
+      for (let i = 0; i < count; i++) {
+        const ang = -Math.PI / 2 + (Math.random() - 0.5) * 2.4;
+        const spd = 4 + Math.random() * 9;
+        g.confetti.push({
+          x,
+          y,
+          vx: Math.cos(ang) * spd,
+          vy: Math.sin(ang) * spd,
+          rot: Math.random() * Math.PI * 2,
+          vrot: (Math.random() - 0.5) * 0.3,
+          color: colors[i % colors.length],
+          life: 1.4,
+        });
+      }
+    };
+
+    const addComicEffect = (x, y, text, subText, color = '#fde047') => {
+      gameRef.current.comicEffects.push({
+        x,
+        y,
+        text,
+        subText,
+        color,
+        life: 1.0,
+        scale: 0.3,
+      });
     };
 
     const update = () => {
       const g = gameRef.current;
+      g.tick += 1;
       const chap = CHAPTERS[g.chapterIdx];
 
       if (g.hitStop > 0) {
@@ -317,38 +631,44 @@ export default function HageringGame() {
       }
 
       if (g.shake > 0) {
-        g.shake *= 0.85;
+        g.shake *= 0.84;
         if (g.shake < 0.5) g.shake = 0;
+      }
+
+      if (g.speedLinesTimer > 0) {
+        g.speedLinesTimer -= 1;
       }
 
       const st = g.stone;
 
-      // ストーン滑走中の物理演算
       if (st.state === 'MOVING') {
+        // 残像トレイル記録
+        st.trail.push({ x: st.x, y: st.y, alpha: 0.65 });
+        if (st.trail.length > 10) st.trail.shift();
+        st.trail.forEach((t) => (t.alpha *= 0.86));
+
         st.x += st.vx;
         st.y += st.vy;
         st.vx *= chap.friction;
         st.vy *= chap.friction;
-        st.angle += Math.hypot(st.vx, st.vy) * 0.04;
+        st.angle += Math.hypot(st.vx, st.vy) * 0.045;
 
-        // 左右壁バウンド
-        if (st.x - st.r < 12) {
-          st.x = 12 + st.r;
+        // 壁バウンド
+        if (st.x - st.r < 14) {
+          st.x = 14 + st.r;
           st.vx = Math.abs(st.vx) * 0.85;
           playSound('hit');
-        } else if (st.x + st.r > g.width - 12) {
-          st.x = g.width - 12 - st.r;
+        } else if (st.x + st.r > g.width - 14) {
+          st.x = g.width - 14 - st.r;
           st.vx = -Math.abs(st.vx) * 0.85;
           playSound('hit');
         }
-
-        // 上壁バウンド
-        if (st.y - st.r < 55) {
-          st.y = 55 + st.r;
-          st.vy = Math.abs(st.vy) * 0.7;
+        if (st.y - st.r < 56) {
+          st.y = 56 + st.r;
+          st.vy = Math.abs(st.vy) * 0.75;
         }
 
-        // 障害物との衝突判定（爽快吹っ飛ばし）
+        // 障害物ヒット判定
         g.obstacles.forEach((obs) => {
           if (obs.blasted) return;
           const dx = obs.x - st.x;
@@ -359,32 +679,32 @@ export default function HageringGame() {
           if (dist < minDist && dist > 0) {
             const nx = dx / dist;
             const ny = dy / dist;
-            const impact = Math.max(10, Math.hypot(st.vx, st.vy) * 1.45);
+            const impact = Math.max(11, Math.hypot(st.vx, st.vy) * 1.5);
 
             obs.blasted = true;
-            obs.vx = nx * impact * 1.8 + (Math.random() - 0.5) * 6;
-            obs.vy = ny * impact * 1.8 - 4;
-            obs.vrot = (Math.random() > 0.5 ? 1 : -1) * 0.35;
+            obs.vx = nx * impact * 1.9 + (Math.random() - 0.5) * 6;
+            obs.vy = ny * impact * 1.9 - 4;
+            obs.vrot = (Math.random() > 0.5 ? 1 : -1) * 0.4;
 
-            // フィーバー中は減速せず貫通！通常時は少しだけ跳ね返り
             if (!g.isFever) {
-              st.vx -= nx * 2.2;
-              st.vy -= ny * 2.2;
+              st.vx -= nx * 2.0;
+              st.vy -= ny * 2.0;
             }
 
             g.combo += 1;
             const gainPts = (obs.isBoss ? 500 : 150) * g.combo * (g.isFever ? 2 : 1);
             g.score += gainPts;
-            g.shake = obs.isBoss ? 16 : 9;
+            g.shake = obs.isBoss ? 18 : 11;
             g.hitStop = obs.isBoss ? 4 : 2;
+            g.speedLinesTimer = 14;
 
             if (!g.isFever) {
-              g.feverGauge = Math.min(100, g.feverGauge + (obs.isBoss ? 45 : 22));
+              g.feverGauge = Math.min(100, g.feverGauge + (obs.isBoss ? 50 : 25));
               if (g.feverGauge >= 100) {
                 g.isFever = true;
                 playSound('fever');
-                addFloatingText(st.x, st.y - 30, '黄金の増毛フィーバー!!', '#facc15');
-                spawnParticles(st.x, st.y, '#facc15', 30);
+                addComicEffect(st.x, st.y - 35, '黄金増毛MAX!!', '無敵貫通モード!!', '#facc15');
+                spawnParticles(st.x, st.y, '#facc15', 32);
               } else {
                 playSound('hit');
               }
@@ -392,8 +712,9 @@ export default function HageringGame() {
               playSound('hit');
             }
 
-            spawnParticles(obs.x, obs.y, g.isFever ? '#facc15' : '#38bdf8', 16);
-            addFloatingText(obs.x, obs.y - 10, `スカッ! +${gainPts}`, g.isFever ? '#fde047' : '#ffffff');
+            const sfxWord = ONOMATOPOEIA[Math.floor(Math.random() * ONOMATOPOEIA.length)];
+            spawnParticles(obs.x, obs.y, g.isFever ? '#facc15' : '#38bdf8', 18);
+            addComicEffect(obs.x, obs.y - 12, sfxWord, `+${gainPts} PTS`, g.isFever ? '#fde047' : '#ffffff');
 
             setScore(g.score);
             setCombo(g.combo);
@@ -402,24 +723,23 @@ export default function HageringGame() {
           }
         });
 
-        // 停止判定
         const speed = Math.hypot(st.vx, st.vy);
         if (speed < 0.35 || st.y > g.height + 40) {
           st.vx = 0;
           st.vy = 0;
           st.state = 'STOPPED';
+          st.trail = [];
 
           const distToHouse = Math.hypot(st.x - g.house.x, st.y - g.house.y);
           const inHouse = distToHouse <= g.house.r + st.r * 0.4;
 
           if (inHouse) {
-            // ハウスインでクリア！
             const centerBonus = Math.round(Math.max(300, (1 - distToHouse / g.house.r) * 1500));
             g.score += centerBonus;
             setScore(g.score);
             playSound('clear');
-            spawnParticles(g.house.x, g.house.y, '#facc15', 35);
-            addFloatingText(g.house.x, g.house.y, `ナイスイン! +${centerBonus}`, '#4ade80');
+            spawnConfetti(g.house.x, g.house.y, 55);
+            addComicEffect(g.house.x, g.house.y, 'ナイスイン!!', `BONUS +${centerBonus}`, '#4ade80');
 
             setTimeout(() => {
               if (g.mode === 'ENDLESS') {
@@ -446,16 +766,15 @@ export default function HageringGame() {
                 });
                 setScreen('RESULT');
               }
-            }, 950);
+            }, 1100);
           } else {
-            // 残弾チェック
             const nextShots = g.shotsLeft - 1;
             g.shotsLeft = nextShots;
             setShotsLeft(nextShots);
 
             if (nextShots > 0) {
               setTimeout(() => {
-                g.stone = { x: g.width / 2, y: g.height - 110, vx: 0, vy: 0, r: 22, state: 'READY', angle: 0 };
+                g.stone = { x: g.width / 2, y: g.height - 110, vx: 0, vy: 0, r: 23, state: 'READY', angle: 0, trail: [] };
                 g.isFever = false;
                 setIsFever(false);
               }, 550);
@@ -471,13 +790,12 @@ export default function HageringGame() {
                   bonus: 0,
                 });
                 setScreen('RESULT');
-              }, 700);
+              }, 750);
             }
           }
         }
       }
 
-      // 吹っ飛んだ障害物のアニメーション
       g.obstacles.forEach((obs) => {
         if (obs.blasted) {
           obs.x += obs.vx;
@@ -486,20 +804,28 @@ export default function HageringGame() {
         }
       });
 
-      // パーティクル更新
       g.particles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
-        p.life -= 0.03;
+        p.life -= 0.032;
       });
       g.particles = g.particles.filter((p) => p.life > 0);
 
-      // フローティングテキスト更新
-      g.floatingTexts.forEach((ft) => {
-        ft.y -= 1.2;
-        ft.life -= 0.025;
+      g.confetti.forEach((c) => {
+        c.x += c.vx;
+        c.y += c.vy;
+        c.vy += 0.22;
+        c.rot += c.vrot;
+        c.life -= 0.018;
       });
-      g.floatingTexts = g.floatingTexts.filter((ft) => ft.life > 0);
+      g.confetti = g.confetti.filter((c) => c.life > 0);
+
+      g.comicEffects.forEach((ce) => {
+        ce.y -= 1.0;
+        ce.scale = Math.min(1.0, ce.scale + 0.18);
+        ce.life -= 0.025;
+      });
+      g.comicEffects = g.comicEffects.filter((ce) => ce.life > 0);
     };
 
     const draw = () => {
@@ -513,29 +839,37 @@ export default function HageringGame() {
         ctx.translate((Math.random() - 0.5) * g.shake, (Math.random() - 0.5) * g.shake);
       }
 
-      // 背景＆レーン描画
+      // 背景＆レーン床
       ctx.fillStyle = chap.bg;
       ctx.fillRect(0, 0, w, h);
 
       ctx.fillStyle = chap.floor;
       ctx.fillRect(14, 55, w - 28, h - 70);
 
-      // レーン装飾ライン
-      ctx.strokeStyle = chap.line;
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.35;
-      ctx.beginPath();
-      ctx.moveTo(w / 2, 55);
-      ctx.lineTo(w / 2, h - 15);
-      ctx.moveTo(14, h - 110);
-      ctx.lineTo(w - 14, h - 110);
-      ctx.stroke();
+      // アニメーションするレーンタイル模様
+      ctx.strokeStyle = chap.tile;
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.25;
+      const gridStep = 45;
+      for (let gx = 14; gx < w - 14; gx += gridStep) {
+        ctx.beginPath();
+        ctx.moveTo(gx, 55);
+        ctx.lineTo(gx, h - 15);
+        ctx.stroke();
+      }
+      for (let gy = 55; gy < h - 15; gy += gridStep) {
+        ctx.beginPath();
+        ctx.moveTo(14, gy);
+        ctx.lineTo(w - 14, gy);
+        ctx.stroke();
+      }
       ctx.globalAlpha = 1.0;
 
-      // 的（ハウス）描画
+      // 的（ハウス）脈動アニメーション
       const hx = g.house.x;
       const hy = g.house.y;
-      const hr = g.house.r;
+      const pulse = Math.sin(g.tick * 0.08) * 3;
+      const hr = g.house.r + pulse;
       const rings = [
         { r: hr, color: '#ef4444' },
         { r: hr * 0.68, color: '#ffffff' },
@@ -544,64 +878,86 @@ export default function HageringGame() {
       ];
       rings.forEach((rg) => {
         ctx.beginPath();
-        ctx.arc(hx, hy, rg.r, 0, Math.PI * 2);
+        ctx.arc(hx, hy, Math.max(4, rg.r), 0, Math.PI * 2);
         ctx.fillStyle = rg.color;
         ctx.fill();
       });
 
-      // 障害物描画
+      // 障害物イラスト描画
       g.obstacles.forEach((obs) => {
         if (obs.x < -80 || obs.x > w + 80 || obs.y < -80 || obs.y > h + 80) return;
-        ctx.save();
-        ctx.translate(obs.x, obs.y);
-        ctx.rotate(obs.rot);
-
-        ctx.beginPath();
-        ctx.arc(0, 0, obs.r, 0, Math.PI * 2);
-        ctx.fillStyle = obs.isBoss ? '#dc2626' : '#f59e0b';
-        ctx.fill();
-        ctx.lineWidth = 2.5;
-        ctx.strokeStyle = '#fef08a';
-        ctx.stroke();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${obs.isBoss ? 11 : 10}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(obs.label.slice(0, 4), 0, 0);
-        ctx.restore();
+        drawObstacleIllustration(ctx, obs, g.tick);
       });
 
-      // 引っ張りガイドライン
+      // スリングショットゴム＆照準アニメ
       const st = g.stone;
-      if (st.state === 'READY' && g.dragStart && g.dragCurrent) {
+      const isPulling = st.state === 'READY' && g.dragStart && g.dragCurrent;
+      if (isPulling) {
         const dx = g.dragStart.x - g.dragCurrent.x;
         const dy = g.dragStart.y - g.dragCurrent.y;
+        const pullX = st.x - dx * 0.45;
+        const pullY = st.y - dy * 0.45;
+
+        // 発射予測矢印
         ctx.save();
         ctx.strokeStyle = '#fde047';
         ctx.lineWidth = 4;
-        ctx.setLineDash([8, 6]);
+        ctx.setLineDash([10, 8]);
+        ctx.lineDashOffset = -g.tick * 1.5;
         ctx.beginPath();
         ctx.moveTo(st.x, st.y);
-        ctx.lineTo(st.x + dx * 1.8, st.y + dy * 1.8);
+        ctx.lineTo(st.x + dx * 2.0, st.y + dy * 2.0);
         ctx.stroke();
         ctx.restore();
+
+        // ゴムバンド描画
+        ctx.strokeStyle = '#f43f5e';
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(st.x - 32, st.y);
+        ctx.lineTo(pullX, pullY);
+        ctx.lineTo(st.x + 32, st.y);
+        ctx.stroke();
       }
 
-      // 主役ストーン（ツヤツヤおやじ頭ベクター風イラスト）描画
+      // 主役の残像トレイル描画
+      st.trail.forEach((tr) => {
+        ctx.save();
+        ctx.globalAlpha = tr.alpha * 0.5;
+        ctx.fillStyle = g.isFever ? '#facc15' : '#fdba74';
+        ctx.beginPath();
+        ctx.arc(tr.x, tr.y, st.r * 0.85, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // 主役ストーン（表情アニメ付きおやじ頭）
       ctx.save();
-      ctx.translate(st.x, st.y);
+      const drawX = isPulling ? st.x - (g.dragStart.x - g.dragCurrent.x) * 0.35 : st.x;
+      const drawY = isPulling ? st.y - (g.dragStart.y - g.dragCurrent.y) * 0.35 : st.y;
+      ctx.translate(drawX, drawY);
       ctx.rotate(st.angle);
 
-      // フィーバーオーラ
+      // 黄金増毛フィーバーのスーパーオーラ＆稲妻
       if (g.isFever) {
+        const auraR = st.r + 11 + Math.sin(g.tick * 0.35) * 4;
         ctx.beginPath();
-        ctx.arc(0, 0, st.r + 9 + Math.sin(Date.now() * 0.02) * 3, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(250, 204, 21, 0.45)';
+        ctx.arc(0, 0, auraR, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.5)';
         ctx.fill();
+
+        // 黄金の逆立ち髪エフェクト
+        ctx.fillStyle = '#facc15';
+        for (let i = -2; i <= 2; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * 6 - 4, -st.r + 4);
+          ctx.lineTo(i * 8, -st.r - 12 - Math.sin(g.tick * 0.4 + i) * 3);
+          ctx.lineTo(i * 6 + 4, -st.r + 4);
+          ctx.fill();
+        }
       }
 
-      // 頭本体
+      // 頭本体グラデーション
       const grad = ctx.createRadialGradient(-6, -8, 3, 0, 0, st.r);
       grad.addColorStop(0, g.isFever ? '#fef08a' : '#ffedd5');
       grad.addColorStop(0.6, g.isFever ? '#eab308' : '#fdba74');
@@ -611,54 +967,87 @@ export default function HageringGame() {
       ctx.arc(0, 0, st.r, 0, Math.PI * 2);
       ctx.fillStyle = grad;
       ctx.fill();
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.5;
       ctx.strokeStyle = '#7c2d12';
       ctx.stroke();
 
       // 側頭部のサザエさん風3本毛
       ctx.strokeStyle = '#1f2937';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.2;
       [-1, 1].forEach((side) => {
         ctx.beginPath();
         ctx.moveTo(side * (st.r - 2), -4);
-        ctx.lineTo(side * (st.r + 5), -7);
+        ctx.lineTo(side * (st.r + 6), -7);
         ctx.moveTo(side * (st.r - 1), 0);
-        ctx.lineTo(side * (st.r + 6), 0);
+        ctx.lineTo(side * (st.r + 7), 0);
         ctx.moveTo(side * (st.r - 2), 4);
-        ctx.lineTo(side * (st.r + 5), 7);
+        ctx.lineTo(side * (st.r + 6), 7);
         ctx.stroke();
       });
 
-      // ピカッ！の天使の輪（ハイライト）
+      // キラーン！ハイライト
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
-      ctx.ellipse(-7, -8, 7, 3.5, -0.5, 0, Math.PI * 2);
+      ctx.ellipse(-7, -9, 7.5, 3.8, -0.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // 気合いの眉毛＆目
+      // 状態別の表情アニメーション
       ctx.strokeStyle = '#1f2937';
-      ctx.lineWidth = 2.2;
-      ctx.beginPath();
-      ctx.moveTo(-9, 2);
-      ctx.lineTo(-3, 5);
-      ctx.moveTo(9, 2);
-      ctx.lineTo(3, 5);
-      ctx.stroke();
-
-      ctx.fillStyle = '#1f2937';
-      ctx.beginPath();
-      ctx.arc(-6, 7, 2, 0, Math.PI * 2);
-      ctx.arc(6, 7, 2, 0, Math.PI * 2);
-      ctx.fill();
-
+      ctx.lineWidth = 2.4;
+      if (isPulling) {
+        // 引っ張り中：＞＜ 顔＆歯食いしばり
+        ctx.beginPath();
+        ctx.moveTo(-10, 1);
+        ctx.lineTo(-4, 5);
+        ctx.lineTo(-10, 9);
+        ctx.moveTo(10, 1);
+        ctx.lineTo(4, 5);
+        ctx.lineTo(10, 9);
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-6, 11, 12, 4);
+        ctx.strokeRect(-6, 11, 12, 4);
+      } else {
+        // 通常・滑走中：キリッとした気合い顔
+        ctx.beginPath();
+        ctx.moveTo(-10, 1);
+        ctx.lineTo(-3, 5);
+        ctx.moveTo(10, 1);
+        ctx.lineTo(3, 5);
+        ctx.stroke();
+        ctx.fillStyle = '#1f2937';
+        ctx.beginPath();
+        ctx.arc(-6, 7, 2.3, 0, Math.PI * 2);
+        ctx.arc(6, 7, 2.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.restore();
 
-      // 滑走中のブラッシングガイド表示
+      // 滑走中のブラッシングガイド
       if (st.state === 'MOVING') {
-        ctx.fillStyle = 'rgba(255,255,255,0.75)';
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
         ctx.font = 'bold 12px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('▲ 画面をコスコスこすって加速＆軌道修正！ ▲', w / 2, h - 32);
+        ctx.fillText('▲ 画面をコスコスこすって加速＆軌道修正！ ▲', w / 2, h - 28);
+      }
+
+      // マンガ風集中線エフェクト（ヒット時）
+      if (g.speedLinesTimer > 0) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.38)';
+        ctx.lineWidth = 2;
+        const cx = w / 2;
+        const cy = h / 2;
+        for (let i = 0; i < 24; i++) {
+          const ang = (i / 24) * Math.PI * 2 + g.tick * 0.1;
+          const r1 = 120 + Math.random() * 40;
+          const r2 = Math.max(w, h);
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(ang) * r1, cy + Math.sin(ang) * r1);
+          ctx.lineTo(cx + Math.cos(ang) * r2, cy + Math.sin(ang) * r2);
+          ctx.stroke();
+        }
+        ctx.restore();
       }
 
       // パーティクル描画
@@ -671,18 +1060,56 @@ export default function HageringGame() {
       });
       ctx.globalAlpha = 1.0;
 
-      // フローティングテキスト描画
-      g.floatingTexts.forEach((ft) => {
-        ctx.globalAlpha = Math.max(0, ft.life);
-        ctx.font = 'bold 16px sans-serif';
+      // クリア紙吹雪描画
+      g.confetti.forEach((c) => {
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, c.life);
+        ctx.translate(c.x, c.y);
+        ctx.rotate(c.rot);
+        ctx.fillStyle = c.color;
+        ctx.fillRect(-5, -3, 10, 6);
+        ctx.restore();
+      });
+
+      // アメコミ・マンガ風ヒット吹き出しエフェクト
+      g.comicEffects.forEach((ce) => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, ce.life);
+        ctx.translate(ce.x, ce.y);
+        ctx.scale(ce.scale, ce.scale);
+
+        // ギザギザ爆発背景
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        const spikes = 12;
+        for (let i = 0; i < spikes * 2; i++) {
+          const rad = i % 2 === 0 ? 48 : 28;
+          const a = (i / (spikes * 2)) * Math.PI * 2;
+          if (i === 0) ctx.moveTo(Math.cos(a) * rad, Math.sin(a) * rad * 0.6);
+          else ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad * 0.6);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // 擬音テキスト
+        ctx.font = '900 18px sans-serif';
         ctx.textAlign = 'center';
         ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 3;
-        ctx.strokeText(ft.text, ft.x, ft.y);
-        ctx.fillStyle = ft.color;
-        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.lineWidth = 4;
+        ctx.strokeText(ce.text, 0, -2);
+        ctx.fillStyle = ce.color;
+        ctx.fillText(ce.text, 0, -2);
+
+        // スコアテキスト
+        ctx.font = 'bold 12px sans-serif';
+        ctx.strokeText(ce.subText, 0, 15);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(ce.subText, 0, 15);
+        ctx.restore();
       });
-      ctx.globalAlpha = 1.0;
 
       ctx.restore();
     };
@@ -700,7 +1127,6 @@ export default function HageringGame() {
     };
   }, [screen]);
 
-  // タッチ・マウス操作ハンドラ
   const getPos = (e) => {
     const rect = canvasRef.current.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -725,22 +1151,21 @@ export default function HageringGame() {
     if (g.stone.state === 'READY' && g.dragStart) {
       g.dragCurrent = pos;
     } else if (g.stone.state === 'MOVING' && g.lastBrushPos) {
-      // カーリングのブラシ効果（こすると加速＆左右に少し曲がる）
       const dx = pos.x - g.lastBrushPos.x;
       const dist = Math.hypot(dx, pos.y - g.lastBrushPos.y);
       if (dist > 6) {
         g.stone.vy -= 0.16;
-        g.stone.vx += dx * 0.015;
+        g.stone.vx += dx * 0.016;
         g.lastBrushPos = pos;
         playSound('brush');
         g.particles.push({
-          x: g.stone.x + (Math.random() - 0.5) * 24,
+          x: g.stone.x + (Math.random() - 0.5) * 26,
           y: g.stone.y + 18,
-          vx: (Math.random() - 0.5) * 2,
-          vy: 2,
-          life: 0.7,
+          vx: (Math.random() - 0.5) * 2.5,
+          vy: 2.2,
+          life: 0.75,
           color: '#bae6fd',
-          size: 3,
+          size: 3.5,
         });
       }
     }
@@ -756,7 +1181,7 @@ export default function HageringGame() {
       if (power > 18) {
         const capped = Math.min(power, 160);
         const angle = Math.atan2(dy, dx);
-        const speed = (capped / 160) * 19 + 5;
+        const speed = (capped / 160) * 19.5 + 5.5;
         g.stone.vx = Math.cos(angle) * speed;
         g.stone.vy = Math.sin(angle) * speed;
         g.stone.state = 'MOVING';
@@ -768,19 +1193,16 @@ export default function HageringGame() {
     g.lastBrushPos = null;
   };
 
-  // LINEシェア処理
   const shareToLine = () => {
     const url = typeof window !== 'undefined' ? window.location.origin : 'https://hagering.vercel.app';
     const text = `【SUNミニゲーム第3弾】『ハゲリング』でスコア ${score.toLocaleString()} 点達成！ツルピカの頭で邪魔者を吹っ飛ばせ！\n${url}`;
     window.open(`https://line.me/R/msg/text/?${encodeURIComponent(text)}`, '_blank');
   };
 
-  // プレイ画面（スマホ1画面フィットCanvas）
   if (screen === 'PLAY') {
     const chap = CHAPTERS[chapterIdx];
     return (
       <div style={styles.playWrapper}>
-        {/* 上部ステータスバー */}
         <div style={styles.hudBar}>
           <div>
             <div style={{ fontSize: '11px', color: '#93c5fd' }}>
@@ -813,11 +1235,9 @@ export default function HageringGame() {
     );
   }
 
-  // タイトル・ステージ選択・リザルト画面（携帯ゲーム機風ベゼルUI）
   return (
     <div style={styles.outerContainer}>
       <div style={styles.handheldBezel}>
-        {/* 上部スピーカー穴風装飾 */}
         <div style={styles.bezelTop}>
           <span style={styles.powerLed} />
           <span style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', color: '#94a3b8' }}>
@@ -825,7 +1245,6 @@ export default function HageringGame() {
           </span>
         </div>
 
-        {/* 液晶スクリーンエリア */}
         <div style={styles.lcdScreen}>
           {screen === 'TITLE' && (
             <div style={styles.centerBox}>
@@ -833,7 +1252,6 @@ export default function HageringGame() {
               <h1 style={styles.titleLogo}>ハゲリング</h1>
               <p style={styles.subCopy}>〜磨け！滑れ！邪魔者を吹っ飛ばせ！〜</p>
 
-              {/* アイコンイラスト風バッジ */}
               <div style={styles.heroIcon}>👴✨🥌</div>
 
               <div style={{ fontSize: '12px', color: '#fde047', marginBottom: '12px' }}>
@@ -939,12 +1357,10 @@ export default function HageringGame() {
           )}
         </div>
 
-        {/* 広告スペース枠 */}
         <div id="ad-banner-slot" style={styles.adSlot}>
           <span>AD SPACE（広告バナー枠）</span>
         </div>
 
-        {/* シリーズ相互リンク導線 */}
         <div style={styles.crossLinkBox}>
           <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px', fontWeight: 'bold' }}>
             ▼ SUNミニゲームシリーズ好評配信中 ▼
